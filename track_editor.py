@@ -7,7 +7,7 @@ import matplotlib.image as mpimg
 import numpy as np
 
 import constants as c
-from download_tiles import download_tiles, deg2num, num2deg
+import iosm
 
 
 if __name__ == "__main__":
@@ -16,9 +16,9 @@ if __name__ == "__main__":
         os.mkdir("log")
 
     now = dt.datetime.now()  # current date and time
-    date_time = now.strftime("%H%M%S-%m%d%Y")
+    date_time = now.strftime("%Y%m%d-%H%M%S")
 
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=c.log_level,
                         filename=f"log/{date_time}_track_editor.log")
     logger = logging.getLogger()
 
@@ -34,11 +34,11 @@ if __name__ == "__main__":
     lon_max = pd_track["lon"].max()
 
     # Download OSM tiles if needed
-    # download_tiles(lat_min, lon_min, lat_max, lon_max)
+    iosm.download_tiles(lat_min, lon_min, lat_max, lon_max)
 
     # Get map image
-    xtile, ytile = deg2num(lat_max, lon_min, c.max_zoom)
-    final_xtile, final_ytile = deg2num(lat_min, lon_max, c.max_zoom)
+    xtile, ytile = iosm.deg2num(lat_max, lon_min, c.max_zoom)
+    final_xtile, final_ytile = iosm.deg2num(lat_min, lon_max, c.max_zoom)
 
     map_img = None
 
@@ -64,8 +64,8 @@ if __name__ == "__main__":
     plt.axis("equal")
 
     # Plot map
-    ymax, xmax = num2deg(final_xtile+1, ytile, c.max_zoom)
-    ymin, xmin = num2deg(xtile, final_ytile+1, c.max_zoom)
+    ymax, xmax = iosm.num2deg(final_xtile+1, ytile, c.max_zoom)
+    ymin, xmin = iosm.num2deg(xtile, final_ytile+1, c.max_zoom)
     BBox = (xmin, xmax, ymin, ymax)
     plt.imshow(map_img, zorder=0, extent=BBox, aspect='equal')
 
