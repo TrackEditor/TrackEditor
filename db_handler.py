@@ -31,12 +31,19 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
                 LOGGER.info(e)
             else:
                 LOGGER.error(f'Unexpected error initializing database: {e}')
+                return False
+
+        return True
 
     def close_db(self):
         self.cur.close()
 
     def insert_tile(self, zoom: int, xtile: int, ytile: int, status: bool,
                     path: str, size: int):
+        if not self.cur or not self.conn:
+            LOGGER.error('No connection with data base')
+            return False  # not connected
+
         if not status:
             size = 0
 
@@ -48,12 +55,18 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
             self.cur.execute(query, (zoom, xtile, ytile, status, path, size))
             self.conn.commit()
 
+        return True
+
     def clean_tiles(self):
         self.cur.execute('DROP TABLE IF EXISTS Tiles')
         self.conn.commit()
 
     def update_tile_status(self, zoom: int, xtile: int, ytile: int,
-                           status: bool, size: int):
+                           status: bool, size: int) -> bool:
+        if not self.cur or not self.conn:
+            LOGGER.error('No connection with data base')
+            return False  # not connected
+
         query = f"""UPDATE Tiles SET 
                         status=?,
                         size=? 
@@ -64,12 +77,17 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
                 """
         self.cur.execute(query, (status, size, xtile, ytile, zoom))
         self.conn.commit()
+        return True
 
-    def print_tiles(self):
+    def print_tiles(self, verbose=True) -> pd.DataFrame:
         query = 'SELECT * FROM Tiles'
         try:
             df_tiles = pd.read_sql(query, self.conn)
-            print(df_tiles)
+
+            if verbose:
+                print(df_tiles)
+
+            return df_tiles
 
         except pd.io.sql.DatabaseError as e:
             print('No Tiles db to print')
@@ -77,6 +95,7 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
                 LOGGER.info(e)
             else:
                 LOGGER.error(f'Unexpected error initializing database: {e}')
+            return pd.DataFrame()
 
     def get_tile_size(self, zoom: int, xtile: int, ytile: int) -> int:
         if self._tile_exists(zoom, xtile, ytile):
@@ -87,24 +106,34 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
         else:
             return 0
 
-    def get_status_size(self, zoom: int, xtile: int, ytile: int) -> int:
+    def get_tile_status(self, zoom: int, xtile: int, ytile: int) -> int:
         if self._tile_exists(zoom, xtile, ytile):
             query = 'SELECT status FROM Tiles WHERE zoom=? AND x=? AND y=?'
-            size_query = self.cur.execute(query, (zoom, xtile, ytile))
-            size = size_query.fetchone()[0]
-            return size
+            status_query = self.cur.execute(query, (zoom, xtile, ytile))
+            status = status_query.fetchone()[0]
+            return status
         else:
             return 0
 
     def remove_tile(self, zoom: int, xtile: int, ytile: int) -> bool:
+        if not self.cur or not self.conn:
+            LOGGER.error('No connection with data base')
+            return False  # not connected
+
         if self._tile_exists(zoom, xtile, ytile):
             query = 'DELETE FROM Tiles WHERE zoom=? AND x=? and y=?'
             self.cur.execute(query, (zoom, xtile, ytile))
+            return True
         else:
             LOGGER.warning(f'Trying to remove non-existing tile: ' +
                            f'({zoom},{xtile},{ytile})')
+            return False
 
     def _tile_exists(self, zoom: int, xtile: int, ytile: int) -> bool:
+        if not self.cur or not self.conn:
+            LOGGER.error('No connection with data base')
+            return False  # not connected
+
         query = 'SELECT COUNT(*) FROM Tiles WHERE zoom=? AND x=? AND y=?'
         elements = self.cur.execute(query, (zoom, xtile, ytile))
         count = elements.fetchone()[0]

@@ -3,6 +3,7 @@ import os
 
 import iosm
 import constants as c
+from db_handler import DbHandler
 
 
 def area_coor():
@@ -64,13 +65,13 @@ def test_download_url_wrong_tile():
     assert not iosm._download_url(fake_input, fake_input, fake_input)
 
 
-def test_download_tiles_nominal():
-    # Total number of tiles can differ according to zoom level
-    expected_tiles = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 2,
-                      9: 2, 10: 2, 11: 4, 12: 4, 13: 6, 14: 16}
-    total_tiles = sum(expected_tiles.values())
-
-    (lon_min, lon_max, lat_min, lat_max) = area_coor()
-    assert \
-        iosm.download_tiles(lat_min, lon_min, lat_max, lon_max, max_zoom=14) \
-        == total_tiles
+# def test_download_tiles_nominal():
+#     # Total number of tiles can differ according to zoom level
+#     expected_tiles = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 2,
+#                       9: 2, 10: 2, 11: 4, 12: 4, 13: 6, 14: 16}
+#     total_tiles = sum(expected_tiles.values())
+#
+#     (lon_min, lon_max, lat_min, lat_max) = area_coor()
+#     assert \
+#         iosm.download_tiles(lat_min, lon_min, lat_max, lon_max, max_zoom=14) \
+#         == total_tiles
