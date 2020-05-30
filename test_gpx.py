@@ -1,6 +1,11 @@
 import pytest
-import gpx
 import datetime as dt
+import os
+
+import gpx
+
+
+TEST_PATH = os.path.dirname(__file__)
 
 
 def fail():
@@ -8,22 +13,22 @@ def fail():
 
 
 def test_load_file():
-    route = gpx.Gpx("test_cases/basic_sample.gpx")
+    route = gpx.Gpx(f"{TEST_PATH}/test_cases/basic_sample.gpx")
     assert route._load_file()
 
 
 def test_load_file_big():
-    route = gpx.Gpx("test_cases/over_10mb.gpx")
+    route = gpx.Gpx(f"{TEST_PATH}/test_cases/over_10mb.gpx")
     assert route._load_file() is None
 
 
 def test_load_file_no_permission():
-    route = gpx.Gpx("test_cases/no_read_permission.gpx")
+    route = gpx.Gpx(f"{TEST_PATH}/test_cases/no_read_permission.gpx")
     assert route._load_file() is None
 
 
 def test_to_dict():
-    route = gpx.Gpx("test_cases/basic_sample.gpx")
+    route = gpx.Gpx(f"{TEST_PATH}/test_cases/basic_sample.gpx")
     route_dict = route.to_dict()
 
     # Extract data to check
