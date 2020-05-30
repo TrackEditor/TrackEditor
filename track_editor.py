@@ -2,6 +2,8 @@ import logging
 import datetime as dt
 import os
 import tkinter
+import tkinter.ttk as ttk
+import tkinter.filedialog as filedialog
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.gridspec as gridspec
@@ -80,13 +82,32 @@ def plot_gpx(df_track: pd.DataFrame):
         ax.fill_between(np.arange(len(df_track)), df_track.ele)
         ax.set_ylim((df_track.ele.min()*0.8, df_track.ele.max()*1.2))
 
-    return plt.gcf()  #plt.show()
+    return plt.gcf()  # plt.show()
 
 
-def _quit():
+def quit():
     root.quit()     # stops mainloop
     root.destroy()  # this is necessary on Windows to prevent
                     # Fatal Python Error: PyEval_RestoreThread: NULL tstate
+
+
+def donothing():
+    print("donothing")
+
+
+def load_track():
+    gpx_file = tkinter.filedialog.askopenfile(initialdir=os.getcwd(),
+                                              title="Select gpx file",
+                                              filetypes=[("Gps data file", "*.gpx")])
+    # Load gpx file
+    gpx_track = gpx.Gpx(gpx_file.name)
+    df_gpx = gpx_track.to_pandas()
+
+    # Insert plot
+    fig = plot_gpx(df_gpx)
+    canvas = backend_tkagg.FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
 
 if __name__ == "__main__":
@@ -101,22 +122,28 @@ if __name__ == "__main__":
                         filename=f"log/{date_time}_track_editor.log")
     logger = logging.getLogger()
 
-    # Load gpx file
-    my_route = "test_cases/nominal_route.gpx"
-    gpx_track = gpx.Gpx(my_route)
-    df_gpx = gpx_track.to_pandas()
+    # # Load gpx file
+    # my_route = "test_cases/nominal_route.gpx"
+    # gpx_track = gpx.Gpx(my_route)
+    # df_gpx = gpx_track.to_pandas()
     
-    # Plot 
-    fig = plot_gpx(df_gpx)
-
+    # Initialize tkinter
     root = tkinter.Tk()
     root.wm_title("Embedding in Tk")
 
-    canvas = backend_tkagg.FigureCanvasTkAgg(fig, master=root)
-    canvas.draw()
-    canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+    # # Insert plot
+    # fig = plot_gpx(df_gpx)
+    # canvas = backend_tkagg.FigureCanvasTkAgg(fig, master=root)
+    # canvas.draw()
+    # canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-    button = tkinter.Button(master=root, text="Quit", command=_quit)
-    button.pack(side=tkinter.BOTTOM)
+    # Menu
+    menubar = tkinter.Menu(root)
+    filemenu = tkinter.Menu(menubar, tearoff=0)
+    filemenu.add_command(label="Load track", command=load_track)
+    filemenu.add_separator()
+    filemenu.add_command(label="Exit", command=quit)
+    menubar.add_cascade(label="File", menu=filemenu)
+    root.config(menu=menubar)
 
     tkinter.mainloop()
