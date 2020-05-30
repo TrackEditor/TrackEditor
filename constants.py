@@ -4,7 +4,7 @@ import logging
 maximum_file_size = 10e+6
 
 # plot options
-max_zoom = 12
+max_zoom = 14
 
 # log options
 log_level = logging.DEBUG
