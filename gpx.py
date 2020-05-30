@@ -2,7 +2,7 @@ import gpxpy
 import pandas as pd
 import os
 import numpy as np
-import datetime as dt
+import geopy.distance
 
 import constants as c
 
@@ -81,7 +81,41 @@ class Gpx:
                                columns=['lat', 'lon', 'ele',
                                         'time', 'track', 'segment'])
         self.df["time"] = self.df["time"].values.astype(np.datetime64)
+        self._insert_distance()
+        self._insert_positive_elevation()
         return self.df.copy()
+
+    def _insert_positive_elevation(self):
+        self.df["ele diff"] = self.df["ele"].diff()
+        negative_gain = self.df["ele diff"] < 0
+        self.df["ele diff"][negative_gain] = 0
+
+        # Define new column
+        self.df["ele pos cum"] = self.df["ele diff"].cumsum()
+
+        # Drop temporary columns
+        self.df = self.df.drop(labels=["ele diff"], axis=1)
+
+    def _insert_distance(self):
+        # Shift latitude and longitude
+        self.df["lat_shift"] = self.df.lat[1:].reset_index(drop=True)
+        self.df["lon_shift"] = self.df.lon[1:].reset_index(drop=True)
+
+        def _compute_distance(row):
+            from_coor = (row.lat, row.lon)
+            to_coor = (row.lat_shift, row.lon_shift)
+            try:
+                return abs(geopy.distance.geodesic(from_coor, to_coor).km)
+            except ValueError:
+                return 0
+
+        # Define new columns
+        self.df["p2p_distance"] = self.df.apply(_compute_distance, axis=1)
+        self.df["distance"] = self.df.p2p_distance.cumsum()
+
+        # Drop temporary columns
+        self.df = self.df.drop(labels=["lat_shift", "lon_shift"], axis=1)
+
 
     def write(self):
         # TODO
