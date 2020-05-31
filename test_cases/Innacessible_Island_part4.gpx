@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="StravaGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" xmlns="http://www.topografix.com/GPX/1/1">
+ <metadata>
+  <name>Innacessible Island Full</name>
+  <author>
+   <name>Alonso Guarrior</name>
+   <link href="https://www.strava.com/athletes/1893939"/>
+  </author>
+  <copyright author="OpenStreetMap contributors">
+   <year>2020</year>
+   <license>https://www.openstreetmap.org/copyright</license>
+  </copyright>
+  <link href="https://www.strava.com/routes/28067239"/>
+ </metadata>
+ <trk>
+  <name>Innacessible Island Full</name>
+  <link href="https://www.strava.com/routes/28067239"/>
+  <type>Recorrido en bicicleta</type>
+  <trkseg>
+   <trkpt lat="-37.29539001258956" lon="-12.654180000070516">
+    <ele>204.74</ele>
+   </trkpt>
+   <trkpt lat="-37.29539000944215" lon="-12.655045000105845">
+    <ele>189.03</ele>
+   </trkpt>
+   <trkpt lat="-37.295390000000005" lon="-12.65591">
+    <ele>207.43</ele>
+   </trkpt>
+   <trkpt lat="-37.29520501938021" lon="-12.656870011821232">
+    <ele>221.17</ele>
+   </trkpt>
+   <trkpt lat="-37.295020031006906" lon="-12.657830018920944">
+    <ele>238.37000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.29483503488018" lon="-12.658790021299">
+    <ele>276.27</ele>
+   </trkpt>
+   <trkpt lat="-37.29465003100011" lon="-12.659750018955254">
+    <ele>291.63</ele>
+   </trkpt>
+   <trkpt lat="-37.29446501936683" lon="-12.660710011889565">
+    <ele>324.03000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.29428" lon="-12.66167">
+    <ele>327.0</ele>
+   </trkpt>
+   <trkpt lat="-37.293856009831245" lon="-12.662434017205698">
+    <ele>344.19000000000005</ele>
+   </trkpt>
+   <trkpt lat="-37.293432014751794" lon="-12.663198025799305">
+    <ele>355.26</ele>
+   </trkpt>
+   <trkpt lat="-37.29300801476177" lon="-12.663962025780958">
+    <ele>370.00000000000006</ele>
+   </trkpt>
+   <trkpt lat="-37.29258400986132" lon="-12.664726017150784">
+    <ele>369.93</ele>
+   </trkpt>
+   <trkpt lat="-37.29216" lon="-12.665490000000002">
+    <ele>381.86</ele>
+   </trkpt>
+   <trkpt lat="-37.29190500879449" lon="-12.666325008502975">
+    <ele>365.37</ele>
+   </trkpt>
+   <trkpt lat="-37.29165001172337" lon="-12.667160011345661">
+    <ele>373.88000000000005</ele>
+   </trkpt>
+   <trkpt lat="-37.291395008786765" lon="-12.667995008528026">
+    <ele>391.37000000000006</ele>
+   </trkpt>
+   <trkpt lat="-37.291140000000006" lon="-12.668830000000002">
+    <ele>428.40000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.29059750641194" lon="-12.669542515404654">
+    <ele>432.1700000000001</ele>
+   </trkpt>
+   <trkpt lat="-37.29005500855307" lon="-12.670255020534217">
+    <ele>413.2</ele>
+   </trkpt>
+   <trkpt lat="-37.289512506423534" lon="-12.67096751538896">
+    <ele>383.89</ele>
+   </trkpt>
+   <trkpt lat="-37.288970000000006" lon="-12.67168">
+    <ele>360.93</ele>
+   </trkpt>
+   <trkpt lat="-37.28844000695407" lon="-12.67242251569374">
+    <ele>365.36</ele>
+   </trkpt>
+   <trkpt lat="-37.28791000927021" lon="-12.673165020927307">
+    <ele>350.05</ele>
+   </trkpt>
+   <trkpt lat="-37.28738000694858" lon="-12.673907515700959">
+    <ele>368.02</ele>
+   </trkpt>
+   <trkpt lat="-37.28685" lon="-12.674650000000002">
+    <ele>405.96000000000004</ele>
+   </trkpt>
+   <trkpt lat="-37.286320005441944" lon="-12.67545667807848">
+    <ele>408.46000000000004</ele>
+   </trkpt>
+   <trkpt lat="-37.285790005409915" lon="-12.676263344793728">
+    <ele>401.67</ele>
+   </trkpt>
+   <trkpt lat="-37.28526" lon="-12.67707">
+    <ele>390.29</ele>
+   </trkpt>
+   <trkpt lat="-37.284953340599714" lon="-12.678000007607839">
+    <ele>391.07</ele>
+   </trkpt>
+   <trkpt lat="-37.28464667392374" lon="-12.67893000763592">
+    <ele>394.16</ele>
+   </trkpt>
+   <trkpt lat="-37.28434" lon="-12.679860000000001">
+    <ele>392.25000000000006</ele>
+   </trkpt>
+   <trkpt lat="-37.284857506676005" lon="-12.680587484988093">
+    <ele>397.57000000000005</ele>
+   </trkpt>
+   <trkpt lat="-37.28537500889998" lon="-12.681314979981922">
+    <ele>401.4800000000001</ele>
+   </trkpt>
+  </trkseg>
+ </trk>
+</gpx>

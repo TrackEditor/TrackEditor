@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="StravaGPX" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" xmlns="http://www.topografix.com/GPX/1/1">
+ <metadata>
+  <name>Innacessible Island Full</name>
+  <author>
+   <name>Alonso Guarrior</name>
+   <link href="https://www.strava.com/athletes/1893939"/>
+  </author>
+  <copyright author="OpenStreetMap contributors">
+   <year>2020</year>
+   <license>https://www.openstreetmap.org/copyright</license>
+  </copyright>
+  <link href="https://www.strava.com/routes/28067239"/>
+ </metadata>
+ <trk>
+  <name>Innacessible Island Full</name>
+  <link href="https://www.strava.com/routes/28067239"/>
+  <type>Recorrido en bicicleta</type>
+  <trkseg>
+   <trkpt lat="-37.312147508016864" lon="-12.676029990652454">
+    <ele>282.84000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.31186" lon="-12.67523">
+    <ele>270.32</ele>
+   </trkpt>
+   <trkpt lat="-37.31149000581811" lon="-12.674396658407574">
+    <ele>286.59000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.31112000579293" lon="-12.673563325017643">
+    <ele>276.32</ele>
+   </trkpt>
+   <trkpt lat="-37.310750000000006" lon="-12.672730000000001">
+    <ele>313.56</ele>
+   </trkpt>
+   <trkpt lat="-37.3103800079121" lon="-12.671759990440123">
+    <ele>340.09</ele>
+   </trkpt>
+   <trkpt lat="-37.31001000790723" lon="-12.670789990427531">
+    <ele>346.91</ele>
+   </trkpt>
+   <trkpt lat="-37.30964" lon="-12.669820000000001">
+    <ele>330.85</ele>
+   </trkpt>
+   <trkpt lat="-37.30923667309252" lon="-12.66894665731486">
+    <ele>306.76000000000005</ele>
+   </trkpt>
+   <trkpt lat="-37.30883333976747" lon="-12.6680733239996">
+    <ele>280.1</ele>
+   </trkpt>
+   <trkpt lat="-37.30843" lon="-12.667200000000001">
+    <ele>321.3</ele>
+   </trkpt>
+   <trkpt lat="-37.30806501015907" lon="-12.666302486911894">
+    <ele>315.44</ele>
+   </trkpt>
+   <trkpt lat="-37.307700013540504" lon="-12.665404982537362">
+    <ele>321.14000000000004</ele>
+   </trkpt>
+   <trkpt lat="-37.307335010144456" lon="-12.664507486876362">
+    <ele>321.89</ele>
+   </trkpt>
+   <trkpt lat="-37.30697" lon="-12.66361">
+    <ele>310.15000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.306612012851936" lon="-12.662735983349712">
+    <ele>302.65000000000003</ele>
+   </trkpt>
+   <trkpt lat="-37.306254019276544" lon="-12.661861975021639">
+    <ele>306.33000000000004</ele>
+   </trkpt>
+   <trkpt lat="-37.305896019273966" lon="-12.660987975015741">
+    <ele>301.70000000000005</ele>
+   </trkpt>
+   <trkpt lat="-37.30553801284436" lon="-12.660113983331984">
+    <ele>275.04</ele>
+   </trkpt>
+   <trkpt lat="-37.30518" lon="-12.65924">
+    <ele>274.47</ele>
+   </trkpt>
+   <trkpt lat="-37.30478000858479" lon="-12.658229989260086">
+    <ele>287.35</ele>
+   </trkpt>
+   <trkpt lat="-37.30438000858667" lon="-12.657219989265016">
+    <ele>276.45000000000005</ele>
+   </trkpt>
+   <trkpt lat="-37.30398" lon="-12.656210000000002">
+    <ele>251.5</ele>
+   </trkpt>
+  </trkseg>
+ </trk>
+</gpx>
