@@ -1,3 +1,5 @@
+import hashlib
+
 import constants as c
 import iosm
 
@@ -24,3 +26,15 @@ def auto_zoom(lat_min: float, lon_min: float,
             return zoom
 
     return c.max_zoom
+
+
+def md5sum(file: str) -> str:
+    md5_hash = hashlib.md5()
+
+    a_file = open(file, "rb")
+    content = a_file.read()
+    md5_hash.update(content)
+
+    digest = md5_hash.hexdigest()
+
+    return digest

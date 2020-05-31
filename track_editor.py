@@ -7,13 +7,12 @@ import tkinter.filedialog as filedialog
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.gridspec as gridspec
-import matplotlib.backends.backend_tkagg as  backend_tkagg  # import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import matplotlib.backends.backend_tkagg as backend_tkagg  # import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.backend_bases as backend_bases  # key_press_handler
 import matplotlib.figure as figure  # import Figure
 import numpy as np
 import pandas as pd
 
-import gpx
 import track
 import constants as c
 import iosm
@@ -78,7 +77,13 @@ def generate_map(ob_track: track.Track) -> np.array:
     return map_img, bbox
 
 
-def plot_gpx(ob_track: track.Track):
+def plot_gpx(ob_track: track.Track, fig: plt.figure):
+    """
+    Plot tracks from all gpx loaded files in the provided figure. Uses Open
+    Street Map as background.
+    :param ob_track: track class object where coordinates data frame are stored
+    :param fig: matplotlib figures from user interface
+    """
     color_list = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
                   'blue', 'green', 'red', 'cyan', 'magenta', 'yellow'
                   'brown', 'gold', 'turquoise', 'teal']
@@ -86,7 +91,6 @@ def plot_gpx(ob_track: track.Track):
     map_img, bbox = generate_map(ob_track)
 
     # Plots
-    plt.figure()
     gspec = gridspec.GridSpec(4, 1)
 
     # Plot map
@@ -96,9 +100,9 @@ def plot_gpx(ob_track: track.Track):
 
     # Plot track
     segments_id = ob_track.track.segment.unique()
-    for c, seg_id in zip(color_list, segments_id):
+    for cc, seg_id in zip(color_list, segments_id):
         segment = ob_track.get_segment(seg_id)
-        ax.plot(segment.lon, segment.lat, color=c,
+        ax.plot(segment.lon, segment.lat, color=cc,
                 linewidth=1, marker='o', markersize=2)
 
     # Beauty salon
@@ -109,10 +113,10 @@ def plot_gpx(ob_track: track.Track):
     with plt.style.context('ggplot'):
         plt.subplot(gspec[3, 0])
         ax = plt.gca()
-        for c, seg_id in zip(color_list, segments_id):
+        for cc, seg_id in zip(color_list, segments_id):
             segment = ob_track.get_segment(seg_id)
-            ax.fill_between(segment.distance, segment.ele, alpha=0.2)
-            ax.plot(segment.distance, segment.ele, linewidth=2)
+            ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
+            ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
 
         ax.set_ylim((ob_track.track.ele.min() * 0.8,
                      ob_track.track.ele.max() * 1.2))
@@ -123,34 +127,60 @@ def plot_gpx(ob_track: track.Track):
         ax.set_xticklabels(dist_label)
         ax.set_yticklabels(ele_label)
 
-    return plt.gcf()
 
-
-def quit_app():
-    root.quit()  # stops mainloop
-    root.destroy()  # this is necessary on Windows to prevent
-    # Fatal Python Error: PyEval_RestoreThread: NULL tstate
-
-
-def load_track():
-    gpx_file = tk.filedialog.askopenfile(initialdir=os.getcwd(),
-                                              title="Select gpx file",
-                                              filetypes=[
-                                                  ("Gps data file", "*.gpx")])
-    # Load gpx file
-    MY_TRACK.add_gpx(gpx_file.name)
-
-    # Insert plot
-    fig = plot_gpx(MY_TRACK)
-    canvas = backend_tkagg.FigureCanvasTkAgg(fig, master=root)
-    canvas.draw()
-    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-
-
-class Application(tk.Frame):
+class MainApplication(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        self.init_ui()  # Insert default image
+        self.my_track = track.Track()
+
+        # Create menu
+        self.menubar = tk.Menu(self.parent)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Load track", command=self.load_track)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Exit", command=self.quit_app)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+        self.parent.config(menu=self.menubar)
+
+    def init_ui(self):
+        # Insert default map
+        self.fig = plt.figure(figsize=(5, 4), dpi=100)
+        ax = plt.gca()
+        gspec = gridspec.GridSpec(4, 1)
+
+        # Plot world map
+        plt.subplot(gspec[:3, 0])
+        world_img = mpimg.imread(f'tiles/0/0/0.png')
+        ax.imshow(world_img, zorder=0, aspect='equal')  # TODO this is not working with gspec
+        plt.tick_params(axis="x", bottom=False, top=False, labelbottom=False)
+        plt.tick_params(axis="y", left=False, right=False, labelleft=False)
+
+        # Plot fake elevation
+        with plt.style.context('ggplot'):
+            plt.subplot(gspec[3, 0])
+            plt.plot()
+
+        self.canvas = backend_tkagg.FigureCanvasTkAgg(self.fig, self)
+        self.canvas.get_tk_widget().pack(expand=True, fill='both')
+
+    def quit_app(self):
+        self.parent.quit()  # stops mainloop
+        self.parent.destroy()  # this is necessary on Windows to prevent
+        # Fatal Python Error: PyEval_RestoreThread: NULL tstate
+
+    def load_track(self):
+        # Load gpx file
+        gpx_file = tk.filedialog.askopenfile(initialdir=os.getcwd(),
+                                             title="Select gpx file",
+                                             filetypes=
+                                             [("Gps data file", "*.gpx")])
+        self.my_track.add_gpx(gpx_file.name)
+
+        # Insert plot
+        plot_gpx(self.my_track, self.fig)
+        self.canvas.draw()
 
 
 if __name__ == "__main__":
@@ -168,16 +198,7 @@ if __name__ == "__main__":
     # Initialize tk
     root = tk.Tk()
     root.wm_title("Embedding in Tk")
-
-    # Menu
-    menubar = tk.Menu(root)
-    filemenu = tk.Menu(menubar, tearoff=0)
-    filemenu.add_command(label="Load track", command=load_track)
-    filemenu.add_separator()
-    filemenu.add_command(label="Exit", command=quit_app)
-    menubar.add_cascade(label="File", menu=filemenu)
-    root.config(menu=menubar)
+    MainApplication(root).pack(side="top", fill="both", expand=True)
+    root.mainloop()
 
     # TODO:re-restructure https://stackoverflow.com/questions/17466561/best-way-to-structure-a-tk-application
-
-    tk.mainloop()

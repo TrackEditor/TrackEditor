@@ -1,6 +1,8 @@
 import pandas as pd
 import geopy.distance
+
 import gpx
+import utils
 
 
 class Track:
@@ -10,23 +12,28 @@ class Track:
         self.size = 0  # number of gpx in track
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
         self.total_distance = 0
+        self.loaded_files = []  # md5 of files in Track
 
     def add_gpx(self, file: str):
-        gpx_track = gpx.Gpx(file)
-        df_gpx = gpx_track.to_pandas()
-        df_gpx = df_gpx[self.columns]
-        self.size += 1
+        md5_gpx = utils.md5sum(file)
 
-        df_gpx['segment'] = self.size
-        # self._insert_positive_elevation()  # for segment
-        # self._insert_distance()  # for segment
+        if md5_gpx not in self.loaded_files:
+            gpx_track = gpx.Gpx(file)
+            df_gpx = gpx_track.to_pandas()
+            df_gpx = df_gpx[self.columns]
+            self.loaded_files.append(md5_gpx)
+            self.size += 1
 
-        self.track = pd.concat([self.track, df_gpx])
-        self.track = self.track.reset_index(drop=True)
-        self._insert_positive_elevation()  # for full track
-        self._insert_distance()  # for full track
-        self._update_extremes()
-        self.total_distance = self.track.distance.iloc[-1]
+            df_gpx['segment'] = self.size
+            # self._insert_positive_elevation()  # for segment TODO
+            # self._insert_distance()  # for segment TODO
+
+            self.track = pd.concat([self.track, df_gpx])
+            self.track = self.track.reset_index(drop=True)
+            self._insert_positive_elevation()  # for full track
+            self._insert_distance()  # for full track
+            self._update_extremes()
+            self.total_distance = self.track.distance.iloc[-1]
 
     def get_segment(self, index: int):
         return self.track[self.track['segment'] == index]
