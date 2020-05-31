@@ -7,17 +7,19 @@ import geopy.distance
 import constants as c
 
 
-class NoPreviousGpx(Exception):
+class LoadGpxError(Exception):
     pass
 
 
 class Gpx:
     def __init__(self, file):
         # Private attributes
-        self._filename = os.path.basename(file)
-        self._filepath = os.path.abspath(file)
+        self.filename = os.path.basename(file)
+        self.filepath = os.path.abspath(file)
         self._state = False
         self._gpx = self._load_file()
+        if not self._gpx:
+            raise LoadGpxError(f"Not able to load {self.filename}")
         self._gpx_dict = None
 
         # Public attributes
@@ -33,9 +35,9 @@ class Gpx:
             return True
 
     def _load_file(self):
-        if os.stat(self._filepath).st_size < c.maximum_file_size:
+        if os.stat(self.filepath).st_size < c.maximum_file_size:
             try:
-                gpx_file = open(self._filepath, 'r')
+                gpx_file = open(self.filepath, 'r')
                 self._state = True
                 return gpxpy.parse(gpx_file)
 
@@ -48,9 +50,6 @@ class Gpx:
             return None
 
     def to_dict(self):
-        if not self._check_state():
-            return {}
-
         self._gpx_dict = {"lat": [], "lon": [], "ele": [], "time": [],
                           "track": [], "segment": []}
 

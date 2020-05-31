@@ -1,42 +1,30 @@
 import logging
 import datetime as dt
 import os
-import tkinter
+import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.filedialog as filedialog
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.gridspec as gridspec
-import matplotlib.backends.backend_tkagg as  backend_tkagg  #import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import matplotlib.backend_bases as backend_bases  #key_press_handler
-import matplotlib.figure as figure  #import Figure
+import matplotlib.backends.backend_tkagg as  backend_tkagg  # import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import matplotlib.backend_bases as backend_bases  # key_press_handler
+import matplotlib.figure as figure  # import Figure
 import numpy as np
 import pandas as pd
 
-
 import gpx
+import track
 import constants as c
 import iosm
 import utils
 
 
-def plot_gpx(df_track: pd.DataFrame):
-    # Get extremes values
-    lat_min = df_track["lat"].min()
-    lat_max = df_track["lat"].max()
-    lon_min = df_track["lon"].min()
-    lon_max = df_track["lon"].max()
+MY_TRACK = track.Track()
 
-    # Select optimal zoom
-    zoom = utils.auto_zoom(lat_min, lon_min, lat_max, lon_max)
 
-    # Download OSM tiles if needed
-    iosm.download_tiles(lat_min, lon_min, lat_max, lon_max)
-
-    # Get map image
-    xtile, ytile = iosm.deg2num(lat_max, lon_min, zoom)
-    final_xtile, final_ytile = iosm.deg2num(lat_min, lon_max, zoom)
-
+def create_map_img(extreme_tiles: tuple, zoom: int) -> np.array:
+    xtile, ytile, final_xtile, final_ytile = extreme_tiles
     map_img = None
 
     for x in range(xtile, final_xtile + 1, 1):
@@ -53,6 +41,50 @@ def plot_gpx(df_track: pd.DataFrame):
         else:
             map_img = y_img
 
+    return map_img
+
+
+def get_extreme_tiles(ob_track: track.Track, zoom: int):
+    lat_min, lat_max, lon_min, lon_max = ob_track.extremes
+    xtile, ytile = iosm.deg2num(lat_max, lon_min, zoom)
+    final_xtile, final_ytile = iosm.deg2num(lat_min, lon_max, zoom)
+
+    return xtile, ytile, final_xtile, final_ytile
+
+
+def get_map_box(extreme_tiles, zoom):
+    xtile, ytile, final_xtile, final_ytile = extreme_tiles
+    ymax, xmax = iosm.num2deg(final_xtile + 1, ytile, zoom)
+    ymin, xmin = iosm.num2deg(xtile, final_ytile + 1, zoom)
+    bbox = (xmin, xmax, ymin, ymax)
+    return bbox
+
+
+def generate_map(ob_track: track.Track) -> np.array:
+    # Define map perspective
+    lat_min, lat_max, lon_min, lon_max = ob_track.extremes
+    zoom = utils.auto_zoom(lat_min, lon_min, lat_max, lon_max)
+
+    # Download missing tiles
+    iosm.download_tiles(lat_min, lon_min, lat_max, lon_max, max_zoom=zoom)
+
+    # Generate map image
+    extreme_tiles = get_extreme_tiles(ob_track, zoom)
+    map_img = create_map_img(extreme_tiles, zoom)
+
+    # Define map box
+    bbox = get_map_box(extreme_tiles, zoom)
+
+    return map_img, bbox
+
+
+def plot_gpx(ob_track: track.Track):
+    color_list = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
+                  'blue', 'green', 'red', 'cyan', 'magenta', 'yellow'
+                  'brown', 'gold', 'turquoise', 'teal']
+
+    map_img, bbox = generate_map(ob_track)
+
     # Plots
     plt.figure()
     gspec = gridspec.GridSpec(4, 1)
@@ -60,54 +92,65 @@ def plot_gpx(df_track: pd.DataFrame):
     # Plot map
     plt.subplot(gspec[:3, 0])
     ax = plt.gca()
-    ymax, xmax = iosm.num2deg(final_xtile+1, ytile, zoom)
-    ymin, xmin = iosm.num2deg(xtile, final_ytile+1, zoom)
-    bbox = (xmin, xmax, ymin, ymax)
     ax.imshow(map_img, zorder=0, extent=bbox, aspect='equal')
 
     # Plot track
-    ax.scatter(df_track.lon, df_track.lat, s=5)
+    segments_id = ob_track.track.segment.unique()
+    for c, seg_id in zip(color_list, segments_id):
+        segment = ob_track.get_segment(seg_id)
+        ax.plot(segment.lon, segment.lat, color=c,
+                linewidth=1, marker='o', markersize=2)
 
     # Beauty salon
     plt.tick_params(axis="x", bottom=False, top=False, labelbottom=False)
     plt.tick_params(axis="y", left=False, right=False, labelleft=False)
 
-    ax.set_xlim((xmin, xmax))
-    ax.set_ylim((ymin, ymax))
-
     # Plot elevation
     with plt.style.context('ggplot'):
         plt.subplot(gspec[3, 0])
         ax = plt.gca()
-        ax.fill_between(np.arange(len(df_track)), df_track.ele)
-        ax.set_ylim((df_track.ele.min()*0.8, df_track.ele.max()*1.2))
+        for c, seg_id in zip(color_list, segments_id):
+            segment = ob_track.get_segment(seg_id)
+            ax.fill_between(segment.distance, segment.ele, alpha=0.2)
+            ax.plot(segment.distance, segment.ele, linewidth=2)
 
-    return plt.gcf()  # plt.show()
+        ax.set_ylim((ob_track.track.ele.min() * 0.8,
+                     ob_track.track.ele.max() * 1.2))
+
+        # TODO tuning for low distances labeling
+        dist_label = [f'{int(item)} km' for item in ax.get_xticks()]
+        ele_label = [f'{int(item)} m' for item in ax.get_yticks()]
+        ax.set_xticklabels(dist_label)
+        ax.set_yticklabels(ele_label)
+
+    return plt.gcf()
 
 
-def quit():
-    root.quit()     # stops mainloop
+def quit_app():
+    root.quit()  # stops mainloop
     root.destroy()  # this is necessary on Windows to prevent
-                    # Fatal Python Error: PyEval_RestoreThread: NULL tstate
-
-
-def donothing():
-    print("donothing")
+    # Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
 
 def load_track():
-    gpx_file = tkinter.filedialog.askopenfile(initialdir=os.getcwd(),
+    gpx_file = tk.filedialog.askopenfile(initialdir=os.getcwd(),
                                               title="Select gpx file",
-                                              filetypes=[("Gps data file", "*.gpx")])
+                                              filetypes=[
+                                                  ("Gps data file", "*.gpx")])
     # Load gpx file
-    gpx_track = gpx.Gpx(gpx_file.name)
-    df_gpx = gpx_track.to_pandas()
+    MY_TRACK.add_gpx(gpx_file.name)
 
     # Insert plot
-    fig = plot_gpx(df_gpx)
+    fig = plot_gpx(MY_TRACK)
     canvas = backend_tkagg.FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
-    canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+
+class Application(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
 
 
 if __name__ == "__main__":
@@ -122,28 +165,19 @@ if __name__ == "__main__":
                         filename=f"log/{date_time}_track_editor.log")
     logger = logging.getLogger()
 
-    # # Load gpx file
-    # my_route = "test_cases/nominal_route.gpx"
-    # gpx_track = gpx.Gpx(my_route)
-    # df_gpx = gpx_track.to_pandas()
-    
-    # Initialize tkinter
-    root = tkinter.Tk()
+    # Initialize tk
+    root = tk.Tk()
     root.wm_title("Embedding in Tk")
 
-    # # Insert plot
-    # fig = plot_gpx(df_gpx)
-    # canvas = backend_tkagg.FigureCanvasTkAgg(fig, master=root)
-    # canvas.draw()
-    # canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-
     # Menu
-    menubar = tkinter.Menu(root)
-    filemenu = tkinter.Menu(menubar, tearoff=0)
+    menubar = tk.Menu(root)
+    filemenu = tk.Menu(menubar, tearoff=0)
     filemenu.add_command(label="Load track", command=load_track)
     filemenu.add_separator()
-    filemenu.add_command(label="Exit", command=quit)
+    filemenu.add_command(label="Exit", command=quit_app)
     menubar.add_cascade(label="File", menu=filemenu)
     root.config(menu=menubar)
 
-    tkinter.mainloop()
+    # TODO:re-restructure https://stackoverflow.com/questions/17466561/best-way-to-structure-a-tk-application
+
+    tk.mainloop()
