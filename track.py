@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import geopy.distance
 
 import gpx
@@ -12,6 +13,8 @@ class Track:
         self.size = 0  # number of gpx in track
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
         self.total_distance = 0
+        self.total_uphill = 0
+        self.total_downhill = 0
         self.loaded_files = []  # md5 of files in Track
 
     def add_gpx(self, file: str):
@@ -29,9 +32,12 @@ class Track:
             self.track = pd.concat([self.track, df_gpx])
             self.track = self.track.reset_index(drop=True)
             self._insert_positive_elevation()  # for full track
+            self._insert_negative_elevation()  # for full track
             self._insert_distance()  # for full track
             self._update_extremes()
             self.total_distance = self.track.distance.iloc[-1]
+            self.total_uphill = self.track.ele_pos_cum.iloc[-1]
+            self.total_downhill = self.track.ele_neg_cum.iloc[-1]
 
     def get_segment(self, index: int):
         return self.track[self.track['segment'] == index]
@@ -47,10 +53,25 @@ class Track:
         # Drop temporary columns
         self.track = self.track.drop(labels=['ele diff'], axis=1)
 
+    def _insert_negative_elevation(self):
+        self.track['ele diff'] = self.track['ele'].diff()
+        negative_gain = self.track['ele diff'] > 0
+        self.track.loc[negative_gain, 'ele diff'] = 0
+
+        # Define new column
+        self.track['ele_neg_cum'] = self.track['ele diff'].cumsum()
+
+        # Drop temporary columns
+        self.track = self.track.drop(labels=['ele diff'], axis=1)
+
     def _insert_distance(self):
-        # Shift latitude and longitude
-        self.track['lat_shift'] = self.track.lat[1:].reset_index(drop=True)
-        self.track['lon_shift'] = self.track.lon[1:].reset_index(drop=True)
+        # Shift latitude and longitude (such way that first point is 0km)
+        self.track['lat_shift'] = pd.concat(
+            [pd.Series(np.nan), self.track.lat[0:-1]]).\
+            reset_index(drop=True)
+        self.track['lon_shift'] = pd.concat(
+            [pd.Series(np.nan), self.track.lon[0:-1]]).\
+            reset_index(drop=True)
 
         def compute_distance(row):
             from_coor = (row.lat, row.lon)
