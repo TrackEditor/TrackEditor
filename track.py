@@ -7,7 +7,7 @@ import utils
 
 class Track:
     def __init__(self):
-        self.columns = ['lat', 'lon', 'ele']
+        self.columns = ['lat', 'lon', 'ele', 'segment']
         self.track = pd.DataFrame(columns=self.columns)
         self.size = 0  # number of gpx in track
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
