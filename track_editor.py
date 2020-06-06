@@ -2,14 +2,14 @@ import logging
 import datetime as dt
 import os
 import tkinter as tk
-import tkinter.ttk as ttk
+# import tkinter.ttk as ttk
 import tkinter.filedialog as filedialog
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.gridspec as gridspec
 import matplotlib.backends.backend_tkagg as backend_tkagg
-import matplotlib.backend_bases as backend_bases  # key_press_handler
-import matplotlib.figure as figure  # import Figure
+# import matplotlib.backend_bases as backend_bases  # key_press_handler
+# import matplotlib.figure as figure  # import Figure
 import numpy as np
 import pandas as pd
 import types
@@ -42,42 +42,6 @@ def create_map_img(extreme_tiles: tuple, zoom: int) -> np.array:
             map_img = y_img
 
     return map_img
-
-
-# def optimize_aspect_ratio(extreme_tiles):
-#     xtile, ytile, final_xtile, final_ytile = extreme_tiles
-#
-#     # Initialize error
-#     ar = get_aspect_ratio(xtile, ytile, final_xtile, final_ytile)
-#     error_cur = abs(c.aspect_ratio - ar)
-#     error_prev = error_cur + 1
-#
-#     # Optimize final aspect ratio
-#     while error_prev > error_cur:
-#
-#         if ar < c.aspect_ratio:
-#             final_xtile += 1  # TODO: increase or decrease xtile and final_xtile alternatively
-#         elif ar > c.aspect_ratio:
-#             final_ytile += 1
-#
-#         # Update error
-#         ar = get_aspect_ratio(xtile, ytile, final_xtile, final_ytile)
-#         error_prev = error_cur
-#         error_cur = abs(c.aspect_ratio - ar)
-#
-#     return xtile, ytile, final_xtile, final_ytile
-#
-#
-# def get_aspect_ratio(xtile: int, ytile: int, final_xtile: int,
-#                      final_ytile: int) -> float:
-#     width = final_xtile - xtile
-#     height = final_ytile - ytile
-#
-#     if width < 0 or height < 0:
-#         print(
-#             f'[ERROR] Negative proportion: width={width}, height={height}')
-#
-#     return width/height
 
 
 def get_extreme_tiles(ob_track: track.Track, zoom: int):
@@ -120,25 +84,13 @@ def generate_map(ob_track: track.Track) -> np.array:
     return map_img, bbox
 
 
-def plot_gpx(ob_track: track.Track, fig: plt.figure):
-    """
-    Plot tracks from all gpx loaded files in the provided figure. Uses Open
-    Street Map as background.
-    :param ob_track: track class object where coordinates data frame are stored
-    :param fig: matplotlib figures from user interface
-    """
+def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     color_list = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
                   'blue', 'green', 'red', 'cyan', 'magenta', 'yellow'
                   'brown', 'gold', 'turquoise', 'teal']
 
     map_img, bbox = generate_map(ob_track)
 
-    # Plots
-    gspec = gridspec.GridSpec(4, 1)
-
-    # Plot map
-    plt.subplot(gspec[:3, 0])
-    ax = plt.gca()
     ax.imshow(map_img, zorder=0, extent=bbox, aspect='equal')
 
     # Plot track
@@ -149,96 +101,58 @@ def plot_gpx(ob_track: track.Track, fig: plt.figure):
                 linewidth=1, marker='o', markersize=2, zorder=10)
 
     # Beauty salon
-    plt.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
-    plt.tick_params(axis='y', left=False, right=False, labelleft=False)
-
-    # Plot elevation
-    with plt.style.context('ggplot'):
-        plt.subplot(gspec[3, 0])
-        ax = plt.gca()
-        for cc, seg_id in zip(color_list, segments_id):
-            segment = ob_track.get_segment(seg_id)
-            ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
-            ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
-
-        ax.set_ylim((ob_track.track.ele.min() * 0.8,
-                     ob_track.track.ele.max() * 1.2))
-
-        # TODO tuning for low distances labeling
-        dist_label = [f'{int(item)} km' for item in ax.get_xticks()]
-        ele_label = [f'{int(item)} m' for item in ax.get_yticks()]
-        ax.set_xticklabels(dist_label)
-        ax.set_yticklabels(ele_label)
+    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
+    ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
 
-def plot_empty(ob_track: track.Track, fig: plt.figure):
+def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca):
     color_list = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
                   'blue', 'green', 'red', 'cyan', 'magenta', 'yellow'
                   'brown', 'gold', 'turquoise', 'teal']
 
-    # Plots
-    gspec = gridspec.GridSpec(4, 1)
-
-    # Plot map
-    plt.subplot(gspec[:3, 0])
-    ax = plt.gca()
-
-    world_img = mpimg.imread(f'tiles/0/0/0.png')
-    ax.imshow(world_img, zorder=0, aspect='equal')  # aspect is equal to
-
-
-    # Plot track
+    # Plot elevation
     segments_id = ob_track.track.segment.unique()
+
     for cc, seg_id in zip(color_list, segments_id):
         segment = ob_track.get_segment(seg_id)
-        ax.plot(segment.lon, segment.lat, color=cc,
-                linewidth=1, marker='o', markersize=2, zorder=10)
+        ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
+        ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
 
-    # Beauty salon
-    plt.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
-    plt.tick_params(axis='y', left=False, right=False, labelleft=False)
+    ax.set_ylim((ob_track.track.ele.min() * 0.8,
+                 ob_track.track.ele.max() * 1.2))
 
-    # Plot elevation
-    with plt.style.context('ggplot'):
-        plt.subplot(gspec[3, 0])
-        ax = plt.gca()
-        for cc, seg_id in zip(color_list, segments_id):
-            segment = ob_track.get_segment(seg_id)
-            ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
-            ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
+    # Set labels
+    dist_label = [f'{int(item)} km' for item in ax.get_xticks()]
+    ele_label = [f'{int(item)} m' for item in ax.get_yticks()]
 
-        # ax.set_ylim((ob_track.track.ele.min() * 0.8,
-        #              ob_track.track.ele.max() * 1.2))
+    if len(dist_label) != len(set(dist_label)):
+        dist_label = [f'{item:.1f} km' for item in ax.get_xticks()]
 
-        # TODO tuning for low distances labeling
-        # dist_label = [f'{int(item)} km' for item in ax.get_xticks()]
-        # ele_label = [f'{int(item)} m' for item in ax.get_yticks()]
-        # ax.set_xticklabels(dist_label)
-        # ax.set_yticklabels(ele_label)
+    ax.set_xticklabels(dist_label)
+    ax.set_yticklabels(ele_label)
+
+    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=True)
+    ax.tick_params(axis='y', left=False, right=False, labelleft=True)
+
+    ax.grid(color="white")  # for some reason grid is removed from ggplot
 
 
-def plot_empty2(fig: plt.figure):
-    allaxes = fig.get_axes()
-    print(allaxes)
-    print(len(allaxes))
-    
-    gspec = gridspec.GridSpec(4, 1)
-
-    # Plot world map
-    plt.subplot(gspec[:3, 0])
-    plt.gca().clear()
-
+def plot_world(ax: plt.Figure.gca):
+    ax.clear()
     world_img = mpimg.imread(f'tiles/0/0/0.png')
-    plt.imshow(world_img, zorder=0, aspect='equal')  # aspect is equal to
-    # ensure square pixel
-    plt.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
-    plt.tick_params(axis='y', left=False, right=False, labelleft=False)
+    ax.imshow(world_img, zorder=0, aspect='equal')  # aspect is equal to ensure
+    # square pixel
+    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
+    ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
-    # Plot fake elevation
+
+def plot_no_elevation(ax: plt.Figure.gca):
     with plt.style.context('ggplot'):
-        plt.subplot(gspec[3, 0])
-        plt.gca().clear()
-        plt.plot()
+        ax.plot()
+        ax.set_xlim([0, 1])
+        ax.set_ylim([0, 1])
+        ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
+        ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
 
 class MainApplication(tk.Frame):
@@ -246,6 +160,8 @@ class MainApplication(tk.Frame):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         self.fig = plt.figure(figsize=(8, 6), dpi=100)
+        self.ax_ele = None
+        self.ax_track = None
         self.canvas = backend_tkagg.FigureCanvasTkAgg(self.fig, self)
         self.my_track = track.Track()
         self.init_ui()  # Insert default image
@@ -271,7 +187,20 @@ class MainApplication(tk.Frame):
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
     def init_ui(self):
-        plot_empty(self.my_track, self.fig)
+        # plot_empty(self.fig)
+        gspec = gridspec.GridSpec(4, 1)
+
+        # Plot world map
+        plt.subplot(gspec[:3, 0])
+        self.ax_track = plt.gca()
+        plot_world(self.ax_track)
+
+        # Plot fake elevation
+        with plt.style.context('ggplot'):
+            plt.subplot(gspec[3, 0])
+            self.ax_ele = plt.gca()
+            plot_no_elevation(self.ax_ele)
+
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
 
     def quit_app(self):
@@ -290,37 +219,64 @@ class MainApplication(tk.Frame):
             self.my_track.add_gpx(gpx_file.name)
 
             # Insert plot
-            plot_gpx(self.my_track, self.fig)
+            self.ax_track.cla()
+            plot_track(self.my_track, self.ax_track)
+            plot_elevation(self.my_track, self.ax_ele)
             self.canvas.draw()
 
     def load_session(self):
-        session_file = tk.filedialog.askopenfile(
-            initialdir=os.getcwd(),
-            title='Select session file',
-            filetypes=[('Session file', '*.h5;*.hdf5;*he5'),
-                       ('All files', '*')])
-        if session_file:
-            with pd.HDFStore(session_file.name) as store:
-                session_track = store['session']
-                session_meta = store.get_storer('session').attrs.metadata
+        proceed = True
 
-                # Load new track
-                self.my_track.track = session_track
-                self.my_track.loaded_files = session_meta.loaded_files
-                self.my_track.size = session_meta.size
-                self.my_track.total_distance = session_meta.total_distance
-                self.my_track.extremes = session_meta.extremes
+        if self.my_track.size > 0:
+            message = \
+                'Current session will be deleted. Do you wish to proceed?'
+            proceed = tk.messagebox.askokcancel(title='Load session',
+                                                message=message)
 
-                # Insert plot
-                plot_gpx(self.my_track, self.fig)
-                self.canvas.draw()
+        if proceed:
+            session_file = tk.filedialog.askopenfile(
+                initialdir=os.getcwd(),
+                title='Select session file',
+                filetypes=[('Session file', '*.h5;*.hdf5;*he5'),
+                           ('All files', '*')])
+            if session_file:
+                with pd.HDFStore(session_file.name) as store:
+                    session_track = store['session']
+                    session_meta = store.get_storer('session').attrs.metadata
+
+                    # Load new track
+                    self.my_track.track = session_track
+                    self.my_track.loaded_files = session_meta.loaded_files
+                    self.my_track.size = session_meta.size
+                    self.my_track.total_distance = session_meta.total_distance
+                    self.my_track.extremes = session_meta.extremes
+
+                    # Insert plot
+                    self.ax_track.clear()
+                    self.ax_ele.clear()
+                    plot_track(self.my_track, self.ax_track)
+                    plot_elevation(self.my_track, self.ax_ele)
+                    self.canvas.draw()
 
     def new_session(self):
-        print("New session")
-        self.fig.clf()
-        self.my_track = track.Track()
-        plot_empty(self.my_track, self.fig)
-        print("New session plot?")
+        proceed = True
+
+        if self.my_track.size > 0:
+            message = \
+                'Current session will be deleted. Do you wish to proceed?'
+            proceed = tk.messagebox.askokcancel(title='New session',
+                                                message=message)
+
+        if proceed:
+            # Restart session
+            self.ax_track.cla()
+            self.ax_ele.cla()
+            self.my_track = track.Track()
+
+            # Plot
+            plot_world(self.ax_track)
+            plot_no_elevation(self.ax_ele)
+            self.canvas.draw()
 
     def save_session(self):
         session = self.my_track.track

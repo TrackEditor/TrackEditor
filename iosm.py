@@ -111,7 +111,8 @@ def _download_url(zoom: int, xtile: int, ytile: int) -> bool:
 
 def download_tiles(lat_min: float, lon_min: float,
                    lat_max: float, lon_max: float,
-                   max_zoom: int = c.max_zoom) -> int:
+                   max_zoom: int = c.max_zoom,
+                   extra_tiles: int = 0) -> int:
     """
     Download all tiles in a selected square
     :param lat_min: furthest south point
@@ -119,19 +120,21 @@ def download_tiles(lat_min: float, lon_min: float,
     :param lat_max: furthest north point
     :param lon_max: furthest east point
     :param max_zoom: maximum level of zoom to download
+    :param extra_tiles: surrounding tiles to download
     :return: total number of tiles in the area
     """
     DBH.open_db()  # open database for tiles
     total_tiles = 0  # initialize output counter
 
     for zoom in range(max_zoom + 1):
-        x_tile, y_tile = deg2num(lat_max, lon_min, zoom)
+        xtile, ytile = deg2num(lat_max, lon_min, zoom)
         final_xtile, final_ytile = deg2num(lat_min, lon_max, zoom)
 
-        for x in range(x_tile, final_xtile + 1, 1):
-            for y in range(y_tile, final_ytile + 1, 1):
-                if _download_url(zoom, x, y):
-                    total_tiles += 1
+        for x in range(xtile - extra_tiles, final_xtile + 1 + extra_tiles, 1):
+            for y in range(ytile - extra_tiles, final_ytile + 1 + extra_tiles, 1):
+                if x >= 0 and y >= 0:
+                    if _download_url(zoom, x, y):
+                        total_tiles += 1
     DBH.close_db()
 
     return total_tiles

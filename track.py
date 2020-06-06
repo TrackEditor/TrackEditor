@@ -25,8 +25,6 @@ class Track:
             self.size += 1
 
             df_gpx['segment'] = self.size
-            # self._insert_positive_elevation()  # for segment TODO
-            # self._insert_distance()  # for segment TODO
 
             self.track = pd.concat([self.track, df_gpx])
             self.track = self.track.reset_index(drop=True)
@@ -41,7 +39,7 @@ class Track:
     def _insert_positive_elevation(self):
         self.track['ele diff'] = self.track['ele'].diff()
         negative_gain = self.track['ele diff'] < 0
-        self.track['ele diff'][negative_gain] = 0
+        self.track.loc[negative_gain, 'ele diff'] = 0
 
         # Define new column
         self.track['ele_pos_cum'] = self.track['ele diff'].cumsum()
