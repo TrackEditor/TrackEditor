@@ -101,9 +101,10 @@ class MainApplication(tk.Frame):
             self.my_track.add_gpx(gpx_file.name)
 
             # Insert plot
-            plots.plot_track(self.my_track, self.ax_track, self.fig_track)
+            plots.plot_track(self.my_track, self.ax_track)
             plots.plot_elevation(self.my_track, self.ax_ele)
-            plots.plot_track_info(self.my_track, self.ax_track_info)
+            track_info_table = plots.plot_track_info(self.my_track, self.ax_track_info)
+            plots.track_selection(self.my_track, self.ax_track, self.ax_track_info, self.fig_track, track_info_table)
             self.canvas.draw()
 
     def load_session(self):
@@ -134,7 +135,7 @@ class MainApplication(tk.Frame):
                     self.my_track.extremes = session_meta.extremes
 
                     # Insert plot
-                    plots.plot_track(self.my_track, self.ax_track, self.fig_track)
+                    plots.plot_track(self.my_track, self.ax_track)
                     plots.plot_elevation(self.my_track, self.ax_ele)
                     plots.plot_track_info(self.my_track, self.ax_track_info)
                     self.canvas.draw()

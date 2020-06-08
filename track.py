@@ -16,6 +16,7 @@ class Track:
         self.total_uphill = 0
         self.total_downhill = 0
         self.loaded_files = []  # md5 of files in Track
+        self.selected_segment = []
 
     def add_gpx(self, file: str):
         md5_gpx = utils.md5sum(file)

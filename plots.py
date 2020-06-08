@@ -1,7 +1,10 @@
+from typing import Tuple
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import geopy.distance
+from matplotlib.font_manager import FontProperties
 
 import track
 import constants as c
@@ -14,7 +17,8 @@ COLOR_LIST = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
               'gold', 'turquoise', 'teal']
 
 
-def create_map_img(extreme_tiles: tuple, zoom: int) -> np.array:
+def create_map_img(extreme_tiles: Tuple[int, int, int, int],
+                   zoom: int) -> np.array:
     xtile, ytile, final_xtile, final_ytile = extreme_tiles
     map_img = None
 
@@ -43,7 +47,8 @@ def get_extreme_tiles(ob_track: track.Track, zoom: int):
     return xtile, ytile, final_xtile, final_ytile
 
 
-def get_map_box(extreme_tiles, zoom):
+def get_map_box(extreme_tiles: Tuple[int, int, int, int], zoom: int) -> \
+        Tuple[int, int, int, int]:
     xtile, ytile, final_xtile, final_ytile = extreme_tiles
     ymax, xmax = iosm.num2deg(final_xtile + 1, ytile, zoom)
     ymin, xmin = iosm.num2deg(xtile, final_ytile + 1, zoom)
@@ -129,6 +134,7 @@ def get_elevation_label(ob_track: track.Track, magnitude: str,
 
 
 def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
+    # TODO: refactor, this is a little bit long
     ax.cla()
 
     # Initialize table
@@ -177,6 +183,8 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
         my_table[row_idx, 0].set_facecolor(row_cc)
         my_table[row_idx, 0].set_edgecolor('white')
 
+    return my_table  # TODO modify table when click to bold corresponding row
+
 
 def plot_no_info(ax: plt.Figure.gca):
     ax.cla()
@@ -186,19 +194,7 @@ def plot_no_info(ax: plt.Figure.gca):
         spine.set_visible(False)
 
 
-def get_closest_segment(df_track: pd.DataFrame, point: tuple[float, float]):
-    df_track['point_distance'] = (df_track.lon - point[0])**2 + \
-                           (df_track.lat - point[1])**2
-    min_row = \
-        df_track[df_track.point_distance == df_track.point_distance.min()]
-    min_distance = min_row.point_distance.iloc[0]
-    min_segment = min_row.segment.iloc[0]
-    df_track.drop('point_distance', axis=1, inplace=True)
-
-    return min_distance, min_segment
-
-
-def plot_track(ob_track: track.Track, ax: plt.Figure.gca, fig: plt.Figure):
+def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     ax.cla()
 
     # Plot map
@@ -217,45 +213,59 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca, fig: plt.Figure):
     ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
     # Interactivity
+    # track_selection(ob_track, ax, fig)
+
+
+def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
+    df_track['point_distance'] = df_track.apply(
+        lambda row: geopy.distance.geodesic((row.lat, row.lon), point).km,
+        axis=1)
+    min_row = \
+        df_track[df_track.point_distance == df_track.point_distance.min()]
+    min_distance = min_row.point_distance.iloc[0]
+    min_segment = min_row.segment.iloc[0]
+    df_track.drop('point_distance', axis=1, inplace=True)
+
+    return min_distance, min_segment
+
+
+def track_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
+                    ax_track_info: plt.Figure.gca, fig_track: plt.Figure,
+                    track_info_table):
+    # Highlight track
+    def deselect_segment():
+        if ob_track.selected_segment:
+            for selected_track in ob_track.selected_segment:
+                selected_track.remove()
+            ob_track.selected_segment = []
+
     def on_click(event):
+        if event.xdata and event.ydata:
+            point_distance, seg2select = \
+                get_closest_segment(ob_track.track, (event.ydata, event.xdata))
+        else:  # click outside plot
+            point_distance = 1e+10
+            seg2select = 0
 
-        # Find closest line
-        point_distance, selected_segment = \
-            get_closest_segment(ob_track.track, (event.xdata, event.ydata))
-        print()
-        print(point_distance, selected_segment)
-        select_segment = [False] * (max(segments_id) + 1)
-        if point_distance < 5e-7:
-            try:
-                select_segment[selected_segment] = True
-            except IndexError as e:
-                print(f'IndexError: {e}')
-                print(select_segment)
-                print(selected_segment)
-                print(segments_id)
-                print()
+        if point_distance < c.click_distance and seg2select > 0:
+            deselect_segment()  # deselect current segment if needed
+            segment = ob_track.get_segment(seg2select)
+            selected_segment, = ax_track.plot(segment.lon, segment.lat,
+                                              color=COLOR_LIST[seg2select-1],
+                                              linewidth=4,
+                                              zorder=20)
+            ob_track.selected_segment.append(selected_segment)
+            # TODO: for some reason this is executed as many times as available
+            #  segments, ask in stackoverflow?
 
-        # Plot map
-        map_img, bbox = generate_map(ob_track)
-        ax.imshow(map_img, zorder=0, extent=bbox, aspect='equal')
+            # TODO use track_info_table to bold seg2select, help: https://stackoverflow.com/questions/52429323/python-making-column-row-labels-of-matplotlib-table-bold/52433450
+            # TODO use plot_elevation to plot single selected segment
+        else:
+            deselect_segment()
 
-        print(select_segment)
-        # Plot track
-        for cc, seg_id in zip(COLOR_LIST, segments_id):
-            segment = ob_track.get_segment(seg_id)
+        fig_track.canvas.draw()
 
-            if select_segment[seg_id]:
-                print(f'{seg_id}: selected')
-                ax.plot(segment.lon, segment.lat, color=cc,
-                        linewidth=2, marker='o', markersize=2, zorder=10)
-            else:
-                print(f'{seg_id}: not selected')
-                ax.plot(segment.lon, segment.lat, color=cc,
-                        linewidth=1, markersize=1, zorder=10)
-
-        fig.canvas.draw()
-
-    fig.canvas.mpl_connect('button_press_event', on_click)
+    fig_track.canvas.mpl_connect('button_press_event', on_click)
 
 
 def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca):
