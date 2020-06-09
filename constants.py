@@ -13,6 +13,6 @@ click_distance = 0.1  # km TODO: this should be a function on zoom
 log_level = logging.DEBUG
 
 # OSM request options
-version = "v0.4"
+version = "v0.5"
 email = "alguerre@outlook.com"
 tool = "TrackEditor"
