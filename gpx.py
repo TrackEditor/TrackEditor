@@ -2,7 +2,6 @@ import gpxpy
 import pandas as pd
 import os
 import numpy as np
-import geopy.distance
 
 import constants as c
 
@@ -24,15 +23,6 @@ class Gpx:
 
         # Public attributes
         self.df = None
-
-    def _check_state(self):
-        if not self._state:
-            msg = f"No gpx has been loaded. " + \
-                  f"For developers: self._state is not True"
-            raise NoPreviousGpx(msg)
-
-        else:
-            return True
 
     def _load_file(self):
         if os.stat(self.filepath).st_size < c.maximum_file_size:

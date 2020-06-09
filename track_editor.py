@@ -11,15 +11,15 @@ import matplotlib.gridspec as gridspec
 import matplotlib.backends.backend_tkagg as backend_tkagg
 # import matplotlib.backend_bases as backend_bases  # key_press_handler
 # import matplotlib.figure as figure  # import Figure
-import numpy as np
+# import numpy as np
 import pandas as pd
 import types
 import plots
 
 import track
 import constants as c
-import iosm
-import utils
+# import iosm
+# import utils
 
 
 MY_TRACK = track.Track()
@@ -103,8 +103,10 @@ class MainApplication(tk.Frame):
             # Insert plot
             plots.plot_track(self.my_track, self.ax_track)
             plots.plot_elevation(self.my_track, self.ax_ele)
-            track_info_table = plots.plot_track_info(self.my_track, self.ax_track_info)
-            plots.track_selection(self.my_track, self.ax_track, self.ax_track_info, self.fig_track, track_info_table)
+            track_info_table = plots.plot_track_info(self.my_track,
+                                                     self.ax_track_info)
+            plots.segment_selection(self.my_track, self.ax_track, self.ax_ele,
+                                    self.fig_track, track_info_table)
             self.canvas.draw()
 
     def load_session(self):

@@ -11,7 +11,9 @@ import constants as c
 import utils
 import iosm
 
+# TODO should be this refactor in a class? Does that make sense?
 
+# TODO function get_color for each segment
 COLOR_LIST = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
               'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'brown',
               'gold', 'turquoise', 'teal']
@@ -134,7 +136,6 @@ def get_elevation_label(ob_track: track.Track, magnitude: str,
 
 
 def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
-    # TODO: refactor, this is a little bit long
     ax.cla()
 
     # Initialize table
@@ -151,10 +152,10 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
         lost_elevation_lbl = get_elevation_label(ob_track, 'ele_neg_cum',
                                                  segment_id=seg_id)
 
-        cell_text.append(['',  # cell for color
+        cell_text.append([seg_id,  # cell for color
                           distance_lbl,
                           gained_elevation_lbl,
-                          lost_elevation_lbl])  # is negative
+                          lost_elevation_lbl])
 
         track_color.append(cc)
 
@@ -181,9 +182,11 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
     for row_idx, (row, row_cc) in enumerate(zip(cell_text, track_color)):
         my_table[row_idx, 0].visible_edges = 'BLRT'
         my_table[row_idx, 0].set_facecolor(row_cc)
+        my_table[row_idx, 0].get_text().set_color(row_cc)  # this text will be
+        # kind of invisible
         my_table[row_idx, 0].set_edgecolor('white')
 
-    return my_table  # TODO modify table when click to bold corresponding row
+    return my_table  # this allows table modifications after plot
 
 
 def plot_no_info(ax: plt.Figure.gca):
@@ -212,9 +215,6 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
     ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
-    # Interactivity
-    # track_selection(ob_track, ax, fig)
-
 
 def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
     df_track['point_distance'] = df_track.apply(
@@ -229,17 +229,48 @@ def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
     return min_distance, min_segment
 
 
-def track_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
-                    ax_track_info: plt.Figure.gca, fig_track: plt.Figure,
-                    track_info_table):
-    # Highlight track
+def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
+                      ax_elevation: plt.Figure.gca, fig_track: plt.Figure,
+                      track_info_table):
+
     def deselect_segment():
         if ob_track.selected_segment:
             for selected_track in ob_track.selected_segment:
                 selected_track.remove()
             ob_track.selected_segment = []
 
+    def select_segment(seg2select):
+        segment = ob_track.get_segment(seg2select)
+        selected_segment, = ax_track.plot(segment.lon, segment.lat,
+                                          color=COLOR_LIST[seg2select - 1],
+                                          linewidth=4,
+                                          zorder=20)
+        ob_track.selected_segment.append(selected_segment)
+
+    def select_track_info(seg2select: int = 0, deselect: bool = False):
+        table_size = sorted(track_info_table.get_celld().keys())[-1]
+        max_idx_row = table_size[0]
+        max_idx_col = table_size[1]
+
+        for i_row in range(max_idx_row + 1):
+            head_cell = track_info_table[i_row, 0]
+            segment_txt = head_cell.get_text()._text
+            if segment_txt.isnumeric():
+                if int(segment_txt) == seg2select and not deselect:
+                    for i_col in range(max_idx_col + 1):
+                        cell = track_info_table[i_row, i_col]
+                        cell.set_text_props(
+                            fontproperties=FontProperties(weight='bold'))
+                else:
+                    for i_col in range(max_idx_col + 1):
+                        cell = track_info_table[i_row, i_col]
+                        cell.set_text_props(
+                            fontproperties=FontProperties())
+
     def on_click(event):
+        # TODO: for some reason this is executed as many times as available
+        #  segments, ask in stackoverflow?
+
         if event.xdata and event.ydata:
             point_distance, seg2select = \
                 get_closest_segment(ob_track.track, (event.ydata, event.xdata))
@@ -247,35 +278,38 @@ def track_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
             point_distance = 1e+10
             seg2select = 0
 
+        # Highlight track and elevation
         if point_distance < c.click_distance and seg2select > 0:
             deselect_segment()  # deselect current segment if needed
-            segment = ob_track.get_segment(seg2select)
-            selected_segment, = ax_track.plot(segment.lon, segment.lat,
-                                              color=COLOR_LIST[seg2select-1],
-                                              linewidth=4,
-                                              zorder=20)
-            ob_track.selected_segment.append(selected_segment)
-            # TODO: for some reason this is executed as many times as available
-            #  segments, ask in stackoverflow?
+            select_segment(seg2select)
 
-            # TODO use track_info_table to bold seg2select, help: https://stackoverflow.com/questions/52429323/python-making-column-row-labels-of-matplotlib-table-bold/52433450
-            # TODO use plot_elevation to plot single selected segment
+            plot_elevation(ob_track, ax_elevation, selected_segment=seg2select)
+            select_track_info(seg2select=seg2select)
         else:
             deselect_segment()
+            plot_elevation(ob_track, ax_elevation)
+            select_track_info(deselect=True)
 
         fig_track.canvas.draw()
 
     fig_track.canvas.mpl_connect('button_press_event', on_click)
 
 
-def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca):
+def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
+                   selected_segment: int = 0):
     ax.cla()
 
     # Plot elevation
     segments_id = ob_track.track.segment.unique()
 
-    for cc, seg_id in zip(COLOR_LIST, segments_id):
-        segment = ob_track.get_segment(seg_id)
+    if selected_segment == 0:
+        for cc, seg_id in zip(COLOR_LIST, segments_id):
+            segment = ob_track.get_segment(seg_id)
+            ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
+            ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
+    else:
+        segment = ob_track.get_segment(selected_segment)
+        cc = COLOR_LIST[selected_segment-1]
         ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
         ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
 
