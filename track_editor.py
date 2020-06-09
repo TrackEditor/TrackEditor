@@ -50,6 +50,8 @@ class MainApplication(tk.Frame):
                                   command=self.new_session)
         self.filemenu.add_command(label='Save session',
                                   command=self.save_session)
+        self.filemenu.add_command(label='Save gpx',
+                                  command=self.save_gpx)
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit', command=self.quit_app)
         self.menubar.add_cascade(label='File', menu=self.filemenu)
@@ -180,6 +182,15 @@ class MainApplication(tk.Frame):
             store.put('session', session)
             store.get_storer('session').attrs.metadata = metadata
             store.close()
+
+    def save_gpx(self):
+        gpx_filename = tk.filedialog.asksaveasfilename(
+            initialdir=os.getcwd(),
+            title='Save track as',
+            filetypes=[('Gpx file', '*.gpx')])
+
+        if gpx_filename:  # user may close filedialog
+            self.my_track.save_gpx(gpx_filename)
 
 
 if __name__ == '__main__':

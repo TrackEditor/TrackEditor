@@ -72,7 +72,3 @@ class Gpx:
         self.df["time"] = self.df["time"].values.astype(np.datetime64)
 
         return self.df.copy()
-
-    def write(self):
-        # TODO
-        pass

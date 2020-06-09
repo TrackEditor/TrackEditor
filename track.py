@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import geopy.distance
-
+import gpxpy.gpx
 import gpx
 import utils
 
@@ -94,3 +94,29 @@ class Track:
     def _update_extremes(self):
         self.extremes = (self.track["lat"].min(), self.track["lat"].max(),
                          self.track["lon"].min(), self.track["lon"].max())
+
+    def save_gpx(self, gpx_filename: str):
+        # Create track
+        ob_gpxpy = gpxpy.gpx.GPX()
+        gpx_track = gpxpy.gpx.GPXTrack()
+        ob_gpxpy.tracks.append(gpx_track)
+
+        # Create segments in track
+        for seg_id in self.track.segment.unique():
+            gpx_segment = gpxpy.gpx.GPXTrackSegment()
+            gpx_track.segments.append(gpx_segment)
+
+            df_segment = self.get_segment(seg_id)
+
+            # Insert points to segment
+            for idx in df_segment.index:
+                latitude = df_segment.loc[idx, 'lat']
+                longitude = df_segment.loc[idx, 'lon']
+                elevation = df_segment.loc[idx, 'ele']
+                gpx_point = gpxpy.gpx.GPXTrackPoint(latitude, longitude,
+                                                    elevation=elevation)
+                gpx_segment.points.append(gpx_point)
+
+        # Write file
+        with open(gpx_filename, 'w') as f:
+            f.write(ob_gpxpy.to_xml())
