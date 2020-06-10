@@ -29,7 +29,7 @@ class MainApplication(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.fig = plt.figure(figsize=(8, 6), dpi=100)
+        self.fig = plt.figure(figsize=(12, 8), dpi=100)
         self.ax_ele = None
         self.ax_track = None
         self.ax_track_info = None
@@ -63,7 +63,7 @@ class MainApplication(tk.Frame):
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
     def init_ui(self):
-        # plot_empty(self.fig)
+        # Prepare plot grid distribution
         gspec = gridspec.GridSpec(4, 8)
 
         # Plot world map

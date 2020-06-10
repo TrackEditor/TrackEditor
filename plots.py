@@ -19,6 +19,34 @@ COLOR_LIST = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
               'gold', 'turquoise', 'teal']
 
 
+def auto_zoom(lat_min: float, lon_min: float,
+              lat_max: float, lon_max: float) -> int:
+    """
+    Compute the best zoom to show a complete track. It must contain the full
+    track in a box of 2x2 (2 is specified in constants.py tails.
+    :param lat_min: furthest south point
+    :param lon_min: furthest west point
+    :param lat_max: furthest north point
+    :param lon_max: furthest east point
+    :return: zoom to use to show full track
+    """
+
+    for zoom in range(c.max_zoom):
+        num_x_min, num_y_min = iosm.deg2num(lat_min, lon_min, zoom)
+        num_x_max, num_y_max = iosm.deg2num(lat_max, lon_max, zoom)
+
+        width = abs(num_x_max - num_x_min)
+        height = abs(num_y_max - num_y_min)
+
+        print(f'auto_zoom: {zoom - 1}, width: {width}, height: {height}')
+        if width > c.map_size or height > c.map_size:
+            print(f'auto_zoom: {zoom -1}, width: {width}, height: {height}')
+            return zoom - 1  # in this case previous zoom is the good one
+
+    print(f'auto_zoom: {c.max_zoom} (this is c.max_zoom), width: {width}, height: {height}')
+    return c.max_zoom
+
+
 def create_map_img(extreme_tiles: Tuple[int, int, int, int],
                    zoom: int) -> np.array:
     xtile, ytile, final_xtile, final_ytile = extreme_tiles
@@ -42,18 +70,53 @@ def create_map_img(extreme_tiles: Tuple[int, int, int, int],
 
 
 def get_extreme_tiles(ob_track: track.Track, zoom: int):
+    # Get extreme tiles to fit coordinates
     lat_min, lat_max, lon_min, lon_max = ob_track.extremes
     xtile, ytile = iosm.deg2num(lat_max, lon_min, zoom)
     final_xtile, final_ytile = iosm.deg2num(lat_min, lon_max, zoom)
 
+    # Regularize according to map size
+    xtile, final_xtile = get_ntail_dimension(xtile, final_xtile)
+    ytile, final_ytile = get_ntail_dimension(ytile, final_ytile)
+
     return xtile, ytile, final_xtile, final_ytile
+
+
+def get_ntail_dimension(init_tile, end_tile):
+
+    length = abs(end_tile - init_tile)
+
+    # Create nxn tiles box
+    if length < c.map_size:
+        if length == 0:
+            end_tile += 1
+            if length > 0:
+                init_tile -= 1
+            else:
+                end_tile += 1
+        if length == 1:
+            end_tile += 1
+    elif length > c.map_size:
+        i = 0
+        while length > c.map_size:
+            if i % 2 == 1:
+                end_tile -= 1
+            else:
+                init_tile += 1
+            length = abs(end_tile - init_tile)
+    return init_tile, end_tile
 
 
 def get_map_box(extreme_tiles: Tuple[int, int, int, int], zoom: int) -> \
         Tuple[int, int, int, int]:
     xtile, ytile, final_xtile, final_ytile = extreme_tiles
+    # xtile, final_xtile = get_ntail_dimension(xtile, final_xtile)
+    # ytile, final_ytile = get_ntail_dimension(ytile, final_ytile)
+    # print(xtile, ytile, final_xtile, final_ytile)
+
     ymax, xmax = iosm.num2deg(final_xtile + 1, ytile, zoom)
     ymin, xmin = iosm.num2deg(xtile, final_ytile + 1, zoom)
+
     bbox = (xmin, xmax, ymin, ymax)
     return bbox
 
@@ -61,23 +124,27 @@ def get_map_box(extreme_tiles: Tuple[int, int, int, int], zoom: int) -> \
 def generate_map(ob_track: track.Track) -> np.array:
     # Define map perspective
     lat_min, lat_max, lon_min, lon_max = ob_track.extremes
-    zoom = utils.auto_zoom(lat_min, lon_min, lat_max, lon_max)
+    zoom = auto_zoom(lat_min, lon_min, lat_max, lon_max)
 
     extreme_tiles = get_extreme_tiles(ob_track, zoom)
-    extreme_tiles_expanded = (extreme_tiles[0] - c.margin_outbounds,  # x
-                              extreme_tiles[1] - c.margin_outbounds,  # y
-                              extreme_tiles[2] + c.margin_outbounds,  # xfinal
-                              extreme_tiles[3] + c.margin_outbounds)  # yfinal
+    print(extreme_tiles, zoom)
+    # extreme_tiles_expanded = (extreme_tiles[0] - c.margin_outbounds,  # x
+    #                           extreme_tiles[1] - c.margin_outbounds,  # y
+    #                           extreme_tiles[2] + c.margin_outbounds,  # xfinal
+    #                           extreme_tiles[3] + c.margin_outbounds)  # yfinal
 
     # Download missing tiles
-    iosm.download_tiles(lat_min, lon_min, lat_max, lon_max,
-                        max_zoom=zoom, extra_tiles=c.margin_outbounds)
-
+    print("download tiles")
+    iosm.download_tiles_by_num(extreme_tiles[0], extreme_tiles[1],
+                               extreme_tiles[2], extreme_tiles[3],
+                               max_zoom=zoom, extra_tiles=c.margin_outbounds)
+    print("generate map")
     # Generate map image
-    map_img = create_map_img(extreme_tiles_expanded, zoom)
+    # map_img = create_map_img(extreme_tiles_expanded, zoom)
+    map_img = create_map_img(extreme_tiles, zoom)
 
     # Define map box
-    bbox = get_map_box(extreme_tiles_expanded, zoom)
+    bbox = get_map_box(extreme_tiles, zoom)
 
     return map_img, bbox
 
@@ -204,6 +271,16 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     map_img, bbox = generate_map(ob_track)
     ax.imshow(map_img, zorder=0, extent=bbox, aspect='equal')
 
+    (xmin, xmax, ymin, ymax) = bbox
+    ax.plot(xmin, ymin, 'o', color='k')
+    ax.plot(xmin, ymax, 'o', color='k')
+    ax.plot(xmax, ymin, 'o', color='k')
+    ax.plot(xmax, ymax, 'o', color='k')
+    print(xmin, ymin)
+    print(xmin, ymax)
+    print(xmax, ymin)
+    print(xmax, ymax)
+
     # Plot track
     segments_id = ob_track.track.segment.unique()
     for cc, seg_id in zip(COLOR_LIST, segments_id):
@@ -211,9 +288,9 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
         ax.plot(segment.lon, segment.lat, color=cc,
                 linewidth=1, marker='o', markersize=2, zorder=10)
 
-    # Beauty salon
-    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
-    ax.tick_params(axis='y', left=False, right=False, labelleft=False)
+    # Beauty salon TODO: REMOVE COMMENT
+    # ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
+    # ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
 
 def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
@@ -334,11 +411,11 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
 
 def plot_world(ax: plt.Figure.gca):
     ax.clear()
-    world_img = mpimg.imread(f'tiles/0/0/0.png')
+    world_img = create_map_img((0, 0, 1, 1), 1)
     ax.imshow(world_img, zorder=0, aspect='equal')  # aspect is equal to ensure
     # square pixel
-    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
-    ax.tick_params(axis='y', left=False, right=False, labelleft=False)
+    # ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)  TODO remove this comment
+    # ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
 
 def plot_no_elevation(ax: plt.Figure.gca):
