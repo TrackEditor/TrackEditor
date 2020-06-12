@@ -272,6 +272,16 @@ def plot_no_info(ax: plt.Figure.gca):
         spine.set_visible(False)
 
 
+def point_reduction(df_segment: pd.DataFrame):
+    positions = sorted(list(set([int(pos) for pos in
+                                 np.linspace(0, len(df_segment)-1,
+                                             c.max_displayed_points)]
+                                )
+                            )
+                       )
+    return df_segment.iloc[positions]
+
+
 def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     ax.cla()
 
@@ -279,28 +289,17 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     map_img, bbox = generate_map(ob_track)
     ax.imshow(map_img, zorder=0, extent=bbox, aspect='equal')
 
-    (xmin, xmax, ymin, ymax) = bbox
-    ax.plot(xmin, ymin, 'o', color='k')
-    ax.plot(xmin, ymax, 'o', color='k')
-    ax.plot(xmax, ymin, 'o', color='k')
-    ax.plot(xmax, ymax, 'o', color='k')
-    print(xmin, ymin)
-    print(xmin, ymax)
-    print(xmax, ymin)
-    print(xmax, ymax)
-
     # Plot track
     segments_id = ob_track.track.segment.unique()
     for cc, seg_id in zip(COLOR_LIST, segments_id):
         segment = ob_track.get_segment(seg_id)
-        ax.plot(segment.lon, segment.lat, color=cc,
+        reduced_segment = point_reduction(segment)
+        ax.plot(reduced_segment.lon, reduced_segment.lat, color=cc,
                 linewidth=1, marker='o', markersize=2, zorder=10)
 
     # Beauty salon
-    # ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
-    # ax.tick_params(axis='y', left=False, right=False, labelleft=False)
-    # ax.set_xlim([xmin, xmax])
-    # ax.set_ylim([ymin, ymax])
+    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
+    ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
 
 def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):

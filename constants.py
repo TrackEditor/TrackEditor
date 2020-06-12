@@ -8,6 +8,7 @@ max_zoom = 16
 map_size = 2  # number of tiles
 margin_outbounds = 0  # extra tiles to load
 click_distance = 0.1  # km TODO: this should be a function on zoom
+max_displayed_points = 100
 
 # log options
 log_level = logging.DEBUG
