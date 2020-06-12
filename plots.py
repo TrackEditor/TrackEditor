@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple
 import numpy as np
 import pandas as pd
@@ -8,8 +9,11 @@ from matplotlib.font_manager import FontProperties
 
 import track
 import constants as c
-import utils
+# import utils
 import iosm
+
+
+logger = logging.getLogger(__name__)
 
 # TODO should be this refactor in a class? Does that make sense?
 
@@ -38,9 +42,11 @@ def auto_zoom(lat_min: float, lon_min: float,
         width = abs(num_x_max - num_x_min)
         height = abs(num_y_max - num_y_min)
 
-        print(f'auto_zoom: {zoom - 1}, width: {width}, height: {height}')
+        logger.debug(f'auto_zoom: {zoom - 1}, ' +
+                     f'width: {width}, height: {height}')
         if width > c.map_size or height > c.map_size:
-            print(f'auto_zoom: {zoom -1}, width: {width}, height: {height}')
+            logger.debug(f'auto_zoom: {zoom -1},' +
+                         f'width: {width}, height: {height}')
             return zoom - 1  # in this case previous zoom is the good one
 
         if (width == c.map_size and height < c.map_size) or \
@@ -48,7 +54,7 @@ def auto_zoom(lat_min: float, lon_min: float,
             # this provides bigger auto_zoom than using >= in previous case
             return zoom
 
-    print(f'auto_zoom: {c.max_zoom} (this is c.max_zoom), width: {width}, height: {height}')
+    logger.debug(f'auto_zoom: {c.max_zoom} (this is c.max_zoom)')
     return c.max_zoom
 
 
@@ -80,7 +86,7 @@ def get_extreme_tiles(ob_track: track.Track, zoom: int):
     xtile, ytile = iosm.deg2num(lat_max, lon_min, zoom)
     final_xtile, final_ytile = iosm.deg2num(lat_min, lon_max, zoom)
 
-    print((xtile, ytile, final_xtile, final_ytile), zoom)
+    logger.debug(f'{(xtile, ytile, final_xtile, final_ytile)}, {zoom}')
 
     # Regularize according to map size
     xtile, final_xtile = get_ntail_dimension(xtile, final_xtile)
@@ -104,7 +110,7 @@ def get_ntail_dimension(init_tile, end_tile):
         if length == 1:
             end_tile += 1
     elif length > c.map_size:
-        print("[ERROR] Size reduction!")
+        logger.error('Size reduction!')
         i = 0
         while length > c.map_size:
             if i % 2 == 1:
@@ -118,9 +124,6 @@ def get_ntail_dimension(init_tile, end_tile):
 def get_map_box(extreme_tiles: Tuple[int, int, int, int], zoom: int) -> \
         Tuple[int, int, int, int]:
     xtile, ytile, final_xtile, final_ytile = extreme_tiles
-    # xtile, final_xtile = get_ntail_dimension(xtile, final_xtile)
-    # ytile, final_ytile = get_ntail_dimension(ytile, final_ytile)
-    # print(xtile, ytile, final_xtile, final_ytile)
 
     ymax, xmax = iosm.num2deg(final_xtile + 1, ytile, zoom)
     ymin, xmin = iosm.num2deg(xtile, final_ytile + 1, zoom)
@@ -135,18 +138,14 @@ def generate_map(ob_track: track.Track) -> np.array:
     zoom = auto_zoom(lat_min, lon_min, lat_max, lon_max)
 
     extreme_tiles = get_extreme_tiles(ob_track, zoom)
-    print(extreme_tiles, zoom)
-    # extreme_tiles_expanded = (extreme_tiles[0] - c.margin_outbounds,  # x
-    #                           extreme_tiles[1] - c.margin_outbounds,  # y
-    #                           extreme_tiles[2] + c.margin_outbounds,  # xfinal
-    #                           extreme_tiles[3] + c.margin_outbounds)  # yfinal
+    logger.debug(f'{extreme_tiles}, {zoom}')
 
     # Download missing tiles
-    print("download tiles")
+    logger.debug('download tiles')
     iosm.download_tiles_by_num(extreme_tiles[0], extreme_tiles[1],
                                extreme_tiles[2], extreme_tiles[3],
                                max_zoom=zoom, extra_tiles=c.margin_outbounds)
-    print("generate map")
+    logger.debug('generate map')
     # Generate map image
     # map_img = create_map_img(extreme_tiles_expanded, zoom)
     map_img = create_map_img(extreme_tiles, zoom)
@@ -188,7 +187,7 @@ def get_elevation_label(ob_track: track.Track, magnitude: str,
             elevation = ob_track.total_downhill
         else:
             elevation = 0
-            print("[WARNING] Wrong input in function get_elevation_label")
+            logger.warning('Wrong input in function get_elevation_label')
     else:
         segment = ob_track.get_segment(segment_id)
         first = segment.iloc[0]
