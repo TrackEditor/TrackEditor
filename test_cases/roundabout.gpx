@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="StravaGPX Android" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" xmlns="http://www.topografix.com/GPX/1/1">
+	<metadata>
+		<time>2015-07-24T06:44:14Z</time>
+	</metadata>
+	<trk>
+		<name>basic_sample</name>
+		<type>1</type>
+		<trkseg>
+			<trkpt lat="40.474108" lon="-3.882436">
+				<ele>537.61</ele>
+			</trkpt>
+			<trkpt lat="40.472776" lon="-3.882584">
+				<ele>537.61</ele>
+			</trkpt>
+			<trkpt lat="40.473279" lon="-3.879393">
+				<ele>537.61</ele>
+			</trkpt>
+			<trkpt lat="40.474928" lon="-3.880168">
+				<ele>537.61</ele>
+			</trkpt>
+			<trkpt lat="40.475025" lon="-3.877331">
+				<ele>537.61</ele>
+			</trkpt>
+		</trkseg>
+	</trk>
+</gpx>
