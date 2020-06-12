@@ -59,6 +59,10 @@ class MainApplication(tk.Frame):
 
         #  Insert navigation toolbar for plots
         toolbar = backend_tkagg.NavigationToolbar2Tk(self.canvas, root)
+        toolbar.children['!button3'].pack_forget()  # forward to next view
+        toolbar.children['!button5'].pack_forget()  # zoom to rectangle
+        toolbar.children['!button6'].pack_forget()  # configure subplots
+        toolbar.children['!button7'].pack_forget()  # save figure
         toolbar.update()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
@@ -208,7 +212,7 @@ if __name__ == '__main__':
     # Initialize tk
     root = tk.Tk()
     root.wm_title('Track Editor')
-    # root.geometry('800x800')
+    # root.geometry('1200x800')
     MainApplication(root).pack(side='top', fill='both', expand=True)
 
     def quit_app():  # yes, it is redefined for windows
