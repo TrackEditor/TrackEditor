@@ -23,7 +23,7 @@ def auto_zoom(lat_min: float, lon_min: float,
               lat_max: float, lon_max: float) -> int:
     """
     Compute the best zoom to show a complete track. It must contain the full
-    track in a box of 2x2 (2 is specified in constants.py tails.
+    track in a box of nxn tails (n is specified in constants.py).
     :param lat_min: furthest south point
     :param lon_min: furthest west point
     :param lat_max: furthest north point
@@ -42,6 +42,11 @@ def auto_zoom(lat_min: float, lon_min: float,
         if width > c.map_size or height > c.map_size:
             print(f'auto_zoom: {zoom -1}, width: {width}, height: {height}')
             return zoom - 1  # in this case previous zoom is the good one
+
+        if (width == c.map_size and height < c.map_size) or \
+                (width < c.map_size and height == c.map_size):
+            # this provides bigger auto_zoom than using >= in previous case
+            return zoom
 
     print(f'auto_zoom: {c.max_zoom} (this is c.max_zoom), width: {width}, height: {height}')
     return c.max_zoom
@@ -75,6 +80,8 @@ def get_extreme_tiles(ob_track: track.Track, zoom: int):
     xtile, ytile = iosm.deg2num(lat_max, lon_min, zoom)
     final_xtile, final_ytile = iosm.deg2num(lat_min, lon_max, zoom)
 
+    print((xtile, ytile, final_xtile, final_ytile), zoom)
+
     # Regularize according to map size
     xtile, final_xtile = get_ntail_dimension(xtile, final_xtile)
     ytile, final_ytile = get_ntail_dimension(ytile, final_ytile)
@@ -97,6 +104,7 @@ def get_ntail_dimension(init_tile, end_tile):
         if length == 1:
             end_tile += 1
     elif length > c.map_size:
+        print("[ERROR] Size reduction!")
         i = 0
         while length > c.map_size:
             if i % 2 == 1:
@@ -288,9 +296,11 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
         ax.plot(segment.lon, segment.lat, color=cc,
                 linewidth=1, marker='o', markersize=2, zorder=10)
 
-    # Beauty salon TODO: REMOVE COMMENT
+    # Beauty salon
     # ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
     # ax.tick_params(axis='y', left=False, right=False, labelleft=False)
+    # ax.set_xlim([xmin, xmax])
+    # ax.set_ylim([ymin, ymax])
 
 
 def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
@@ -414,8 +424,8 @@ def plot_world(ax: plt.Figure.gca):
     world_img = create_map_img((0, 0, 1, 1), 1)
     ax.imshow(world_img, zorder=0, aspect='equal')  # aspect is equal to ensure
     # square pixel
-    # ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)  TODO remove this comment
-    # ax.tick_params(axis='y', left=False, right=False, labelleft=False)
+    ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
+    ax.tick_params(axis='y', left=False, right=False, labelleft=False)
 
 
 def plot_no_elevation(ax: plt.Figure.gca):
