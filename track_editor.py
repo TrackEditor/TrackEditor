@@ -30,14 +30,20 @@ class MainApplication(tk.Frame):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         self.fig = plt.figure(figsize=(12, 8), dpi=100)
-        self.ax_ele = None
-        self.ax_track = None
-        self.ax_track_info = None
-        self.fig_ele = None
-        self.fig_track = None
-        self.fig_track_info = None
-        self.canvas = backend_tkagg.FigureCanvasTkAgg(self.fig, self)
-        self.my_track = track.Track()
+
+        # Define shared data
+        self.shared_data = types.SimpleNamespace()
+        self.shared_data.ax_ele = None
+        self.shared_data.ax_track = None
+        self.shared_data.ax_track_info = None
+        self.shared_data.fig_ele = None
+        self.shared_data.fig_track = None
+        self.shared_data.fig_track_info = None
+        self.shared_data.canvas = backend_tkagg.FigureCanvasTkAgg(self.fig,
+                                                                  self)
+        self.shared_data.my_track = track.Track()
+
+        # Initialize user interface
         self.init_ui()  # Insert default image
 
         # Create menu
@@ -52,13 +58,15 @@ class MainApplication(tk.Frame):
         self.parent.config(menu=self.menubar)
 
         #  Insert navigation toolbar for plots
-        toolbar = backend_tkagg.NavigationToolbar2Tk(self.canvas, root)
+        toolbar = backend_tkagg.NavigationToolbar2Tk(self.shared_data.canvas,
+                                                     root)
         toolbar.children['!button3'].pack_forget()  # forward to next view
         toolbar.children['!button5'].pack_forget()  # zoom to rectangle
         toolbar.children['!button6'].pack_forget()  # configure subplots
         toolbar.children['!button7'].pack_forget()  # save figure
         toolbar.update()
-        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        self.shared_data.canvas.get_tk_widget().pack(
+            side=tk.TOP, fill=tk.BOTH, expand=1)
 
     def init_ui(self):
         # Prepare plot grid distribution
@@ -66,24 +74,24 @@ class MainApplication(tk.Frame):
 
         # Plot world map
         plt.subplot(gspec[:3, :5])
-        self.ax_track = plt.gca()
-        self.fig_track = plt.gcf()
-        plots.plot_world(self.ax_track)
+        self.shared_data.ax_track = plt.gca()
+        self.shared_data.fig_track = plt.gcf()
+        plots.plot_world(self.shared_data.ax_track)
 
         # Plot fake elevation
         with plt.style.context('ggplot'):
             plt.subplot(gspec[3, :5])
-            self.ax_ele = plt.gca()
-            self.fig_ele = plt.gcf()
-            plots.plot_no_elevation(self.ax_ele)
+            self.shared_data.ax_ele = plt.gca()
+            self.shared_data.fig_ele = plt.gcf()
+            plots.plot_no_elevation(self.shared_data.ax_ele)
 
         # Text box
         plt.subplot(gspec[:3, 5:])
-        self.ax_track_info = plt.gca()
-        self.fig_track_info = plt.gcf()
-        plots.plot_no_info(self.ax_track_info)
+        self.shared_data.ax_track_info = plt.gca()
+        self.shared_data.fig_track_info = plt.gcf()
+        plots.plot_no_info(self.shared_data.ax_track_info)
 
-        self.canvas.get_tk_widget().pack(expand=True, fill='both')
+        self.shared_data.canvas.get_tk_widget().pack(expand=True, fill='both')
 
     def define_filemenu(self):
         self.filemenu.add_command(label='Load track', command=self.load_track)
@@ -122,21 +130,26 @@ class MainApplication(tk.Frame):
             filetypes=[('Gps data file', '*.gpx'), ('All files', '*')])
 
         if gpx_file:  # user may close filedialog
-            self.my_track.add_gpx(gpx_file.name)
+            self.shared_data.my_track.add_gpx(gpx_file.name)
 
             # Insert plot
-            plots.plot_track(self.my_track, self.ax_track)
-            plots.plot_elevation(self.my_track, self.ax_ele)
-            track_info_table = plots.plot_track_info(self.my_track,
-                                                     self.ax_track_info)
-            plots.segment_selection(self.my_track, self.ax_track, self.ax_ele,
-                                    self.fig_track, track_info_table)
-            self.canvas.draw()
+            plots.plot_track(self.shared_data.my_track,
+                             self.shared_data.ax_track)
+            plots.plot_elevation(self.shared_data.my_track,
+                                 self.shared_data.ax_ele)
+            track_info_table = plots.plot_track_info(
+                self.shared_data.my_track, self.shared_data.ax_track_info)
+            plots.segment_selection(self.shared_data.my_track,
+                                    self.shared_data.ax_track,
+                                    self.shared_data.ax_ele,
+                                    self.shared_data.fig_track,
+                                    track_info_table)
+            self.shared_data.canvas.draw()
 
     def load_session(self):
         proceed = True
 
-        if self.my_track.size > 0:
+        if self.shared_data.my_track.size > 0:
             message = \
                 'Current session will be deleted. Do you wish to proceed?'
             proceed = messagebox.askokcancel(title='Load session',
@@ -154,22 +167,27 @@ class MainApplication(tk.Frame):
                     session_meta = store.get_storer('session').attrs.metadata
 
                     # Load new track
-                    self.my_track.track = session_track
-                    self.my_track.loaded_files = session_meta.loaded_files
-                    self.my_track.size = session_meta.size
-                    self.my_track.total_distance = session_meta.total_distance
-                    self.my_track.extremes = session_meta.extremes
+                    self.shared_data.my_track.track = session_track
+                    self.shared_data.my_track.loaded_files = \
+                        session_meta.loaded_files
+                    self.shared_data.my_track.size = session_meta.size
+                    self.shared_data.my_track.total_distance = \
+                        session_meta.total_distance
+                    self.shared_data.my_track.extremes = session_meta.extremes
 
                     # Insert plot
-                    plots.plot_track(self.my_track, self.ax_track)
-                    plots.plot_elevation(self.my_track, self.ax_ele)
-                    plots.plot_track_info(self.my_track, self.ax_track_info)
-                    self.canvas.draw()
+                    plots.plot_track(self.shared_data.my_track,
+                                     self.shared_data.ax_track)
+                    plots.plot_elevation(self.shared_data.my_track,
+                                         self.shared_data.ax_ele)
+                    plots.plot_track_info(self.shared_data.my_track,
+                                          self.shared_data.ax_track_info)
+                    self.shared_data.canvas.draw()
 
     def new_session(self):
         proceed = True
 
-        if self.my_track.size > 0:
+        if self.shared_data.my_track.size > 0:
             message = \
                 'Current session will be deleted. Do you wish to proceed?'
             proceed = messagebox.askokcancel(title='New session',
@@ -177,22 +195,22 @@ class MainApplication(tk.Frame):
 
         if proceed:
             # Restart session
-            self.my_track = track.Track()
+            self.shared_data.my_track = track.Track()
 
             # Plot
-            plots.plot_world(self.ax_track)
-            plots.plot_no_elevation(self.ax_ele)
-            plots.plot_no_info(self.ax_track_info)
-            self.canvas.draw()
+            plots.plot_world(self.shared_data.ax_track)
+            plots.plot_no_elevation(self.shared_data.ax_ele)
+            plots.plot_no_info(self.shared_data.ax_track_info)
+            self.shared_data.canvas.draw()
 
     def save_session(self):
-        session = self.my_track.track
+        session = self.shared_data.my_track.track
 
         metadata = types.SimpleNamespace()
-        metadata.size = self.my_track.size
-        metadata.extremes = self.my_track.extremes
-        metadata.total_distance = self.my_track.total_distance
-        metadata.loaded_files = self.my_track.loaded_files
+        metadata.size = self.shared_data.my_track.size
+        metadata.extremes = self.shared_data.my_track.extremes
+        metadata.total_distance = self.shared_data.my_track.total_distance
+        metadata.loaded_files = self.shared_data.my_track.loaded_files
 
         session_filename = tk.filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
@@ -212,7 +230,7 @@ class MainApplication(tk.Frame):
             filetypes=[('Gpx file', '*.gpx')])
 
         if gpx_filename:  # user may close filedialog
-            self.my_track.save_gpx(gpx_filename)
+            self.shared_data.my_track.save_gpx(gpx_filename)
 
 
 if __name__ == '__main__':
