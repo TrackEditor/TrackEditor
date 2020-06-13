@@ -19,7 +19,7 @@ import plots
 import track
 import constants as c
 # import iosm
-# import utils
+import utils
 
 
 MY_TRACK = track.Track()
@@ -43,18 +43,12 @@ class MainApplication(tk.Frame):
         # Create menu
         self.menubar = tk.Menu(self.parent)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
-        self.filemenu.add_command(label='Load track', command=self.load_track)
-        self.filemenu.add_command(label='Load session',
-                                  command=self.load_session)
-        self.filemenu.add_command(label='New session',
-                                  command=self.new_session)
-        self.filemenu.add_command(label='Save session',
-                                  command=self.save_session)
-        self.filemenu.add_command(label='Save gpx',
-                                  command=self.save_gpx)
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label='Exit', command=self.quit_app)
+        self.editmenu = tk.Menu(self.menubar, tearoff=0)
+        self.define_filemenu()
+        self.define_editmenu()
+
         self.menubar.add_cascade(label='File', menu=self.filemenu)
+        self.menubar.add_cascade(label='Edit', menu=self.editmenu)
         self.parent.config(menu=self.menubar)
 
         #  Insert navigation toolbar for plots
@@ -90,6 +84,30 @@ class MainApplication(tk.Frame):
         plots.plot_no_info(self.ax_track_info)
 
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
+
+    def define_filemenu(self):
+        self.filemenu.add_command(label='Load track', command=self.load_track)
+        self.filemenu.add_command(label='Load session',
+                                  command=self.load_session)
+        self.filemenu.add_command(label='New session',
+                                  command=self.new_session)
+        self.filemenu.add_command(label='Save session',
+                                  command=self.save_session)
+        self.filemenu.add_command(label='Save gpx',
+                                  command=self.save_gpx)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label='Exit', command=self.quit_app)
+
+    def define_editmenu(self):
+        self.editmenu.add_command(label='Cut', command=utils.not_implemented)
+        self.editmenu.add_command(label='Reverse',
+                                  command=utils.not_implemented)
+        self.editmenu.add_command(label='Insert time',
+                                  command=utils.not_implemented)
+        self.editmenu.add_command(label='Correct elevation',
+                                  command=utils.not_implemented)
+        self.editmenu.add_command(label='Split segment',
+                                  command=utils.not_implemented)
 
     def quit_app(self):
         self.parent.quit()  # stops mainloop

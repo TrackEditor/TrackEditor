@@ -32,3 +32,7 @@ def print_progress_bar(iteration: int, total: int,
     bar = fill * filled_length + '-' * (length - filled_length - 1)
 
     print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='')
+
+
+def not_implemented():
+    print('Not implemented function')
