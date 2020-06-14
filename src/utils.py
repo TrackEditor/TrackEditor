@@ -1,7 +1,14 @@
 import hashlib
+import tkinter.messagebox as messagebox
+import types
 
 
 def md5sum(file: str) -> str:
+    """
+    Create a strings with the md5 of a given file
+    :param file: filename of the file whose md5 is computed for
+    :return: md5 string
+    """
     md5_hash = hashlib.md5()
 
     a_file = open(file, "rb")
@@ -26,13 +33,23 @@ def print_progress_bar(iteration: int, total: int,
     :param length: character length of bar
     :param fill: bar fill character
     """
-    percent = ("{0:." + str(decimals) + "f}").format(100 *
-                                            (float(iteration) / float(total)))
+    percent = \
+        ("{0:." + str(decimals) + "f}").format(
+            100 * (float(iteration) / float(total)))
     filled_length = int(length * iteration // total)
     bar = fill * filled_length + '-' * (length - filled_length - 1)
 
     print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='')
 
 
-def not_implemented():
-    print('Not implemented function')
+def not_implemented(function: types.FunctionType):
+    """
+    Decorator to show warning for not implemented functionalities
+    :param function: not implemented function
+    :return: wra
+    """
+    def wrapper_function(*args, **kwargs):
+        messagebox.showwarning(
+            'Warning',
+            f'Not implemented functionality: {function.__name__}')
+    return wrapper_function

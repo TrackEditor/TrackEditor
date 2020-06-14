@@ -14,6 +14,6 @@ max_displayed_points = 100
 log_level = logging.DEBUG
 
 # OSM request options
-version = "v0.7"
+version = "v0.8"
 email = "alguerre@outlook.com"
 tool = "TrackEditor"
