@@ -11,6 +11,15 @@ There are amazing tools to create tracks from scratch: komoot, strava... But any
 - **dsn**: design documents
 - **test**: test cases for src modules
 
+## Usage
+Just go to the src directory and launch
+```
+python3 track_editor.py
+```
+
+A window in which you can load GPX files will be open, like this:
+![alt text](https://github.com/alguerre/TrackEditor/blob/master/docs/using_sample.png?raw=true)
+
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
 
