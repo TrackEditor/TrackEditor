@@ -1,9 +1,7 @@
 import pytest
 import os
 
-import iosm
-import constants as c
-from db_handler import DbHandler
+from src import constants as c, iosm
 
 
 def area_coor():

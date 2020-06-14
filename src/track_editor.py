@@ -14,12 +14,10 @@ import matplotlib.backends.backend_tkagg as backend_tkagg
 # import numpy as np
 import pandas as pd
 import types
-import plots
 
-import track
-import constants as c
+from src import constants as c, utils, plots, track
+
 # import iosm
-import utils
 
 
 MY_TRACK = track.Track()
@@ -236,7 +234,7 @@ class MainApplication(tk.Frame):
 if __name__ == '__main__':
     # Define logger
     if not os.path.isdir('log'):
-        os.mkdir('log')
+        os.mkdir('../log')
 
     now = dt.datetime.now()  # current date and time
     date_time = now.strftime('%Y%m%d-%H%M%S')

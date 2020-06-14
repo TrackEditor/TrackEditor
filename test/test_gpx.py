@@ -2,8 +2,7 @@ import pytest
 import datetime as dt
 import os
 
-import gpx
-
+from src import gpx
 
 TEST_PATH = os.path.dirname(__file__)
 

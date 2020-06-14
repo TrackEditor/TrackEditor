@@ -7,10 +7,9 @@ import matplotlib.image as mpimg
 import geopy.distance
 from matplotlib.font_manager import FontProperties
 
-import track
-import constants as c
+from src import constants as c, iosm, track
+
 # import utils
-import iosm
 
 
 logger = logging.getLogger(__name__)

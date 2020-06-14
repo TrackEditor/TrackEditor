@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import geopy.distance
 import gpxpy.gpx
-import gpx
-import utils
+from src import utils, gpx
 
 
 class Track:

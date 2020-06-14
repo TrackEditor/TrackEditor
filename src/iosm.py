@@ -7,8 +7,8 @@ import math
 import logging
 from urllib3 import PoolManager
 
-import constants as c
-from db_handler import DbHandler
+from src import constants as c
+from src.db_handler import DbHandler
 
 LOGGER = logging.getLogger(__name__)
 
