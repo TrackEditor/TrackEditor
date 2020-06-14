@@ -8,7 +8,7 @@ There are amazing tools to create tracks from scratch: komoot, strava... But any
 
 ## Repository organization
 - **src**: source code
-- **dsn**: design documents
+- **docs**: design documents
 - **test**: test cases for src modules
 
 ## Usage
