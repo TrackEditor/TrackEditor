@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime as dt
 import geopy.distance
 import gpxpy.gpx
 from src import utils, gpx
@@ -7,7 +8,7 @@ from src import utils, gpx
 
 class Track:
     def __init__(self):
-        self.columns = ['lat', 'lon', 'ele', 'segment']
+        self.columns = ['lat', 'lon', 'ele', 'segment', 'time']
         self.track = pd.DataFrame(columns=self.columns)
         self.size = 0  # number of gpx in track
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
@@ -54,6 +55,12 @@ class Track:
         self.track.loc[self.track['segment'] == index] = rev_segment
         self._update_summary()  # for full track
 
+    def insert_timestamp(self, initial_time, speed):
+        self.track['time'] = \
+            self.track.apply(lambda row:
+                             initial_time +
+                             dt.timedelta(hours=row['distance']/speed), axis=1)
+
     def _insert_positive_elevation(self):
         self.track['ele diff'] = self.track['ele'].diff()
         negative_gain = self.track['ele diff'] < 0
@@ -98,7 +105,8 @@ class Track:
         # Define new columns
         self.track['p2p_distance'] = self.track.apply(compute_distance,
                                                       axis=1)
-        self.track['distance'] = self.track.p2p_distance.cumsum().astype('float32')
+        self.track['distance'] = \
+            self.track.p2p_distance.cumsum().astype('float32')
 
         # Drop temporary columns
         self.track = self.track.drop(
@@ -126,8 +134,10 @@ class Track:
                 latitude = df_segment.loc[idx, 'lat']
                 longitude = df_segment.loc[idx, 'lon']
                 elevation = df_segment.loc[idx, 'ele']
+                time = df_segment.loc[idx, 'time']
                 gpx_point = gpxpy.gpx.GPXTrackPoint(latitude, longitude,
-                                                    elevation=elevation)
+                                                    elevation=elevation,
+                                                    time=time)
                 gpx_segment.points.append(gpx_point)
 
         # Write file
