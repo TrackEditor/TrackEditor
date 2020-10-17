@@ -8,7 +8,7 @@ import geopy.distance
 from matplotlib.font_manager import FontProperties
 
 from src import constants as c, iosm, track
-
+import sys
 # import utils
 
 
@@ -322,6 +322,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
             for selected_track in ob_track.selected_segment:
                 selected_track.remove()
             ob_track.selected_segment = []
+            ob_track.selected_segment_idx = []
 
     def select_segment(seg2select):
         segment = ob_track.get_segment(seg2select)
@@ -330,6 +331,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
                                           linewidth=4,
                                           zorder=20)
         ob_track.selected_segment.append(selected_segment)
+        ob_track.selected_segment_idx.append(seg2select)
 
     def select_track_info(seg2select: int = 0, deselect: bool = False):
         table_size = sorted(track_info_table.get_celld().keys())[-1]
@@ -367,7 +369,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
             deselect_segment()  # deselect current segment if needed
             select_segment(seg2select)
 
-            plot_elevation(ob_track, ax_elevation, selected_segment=seg2select)
+            plot_elevation(ob_track, ax_elevation, selected_segment_idx=seg2select)
             select_track_info(seg2select=seg2select)
         else:
             deselect_segment()
@@ -380,22 +382,29 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
 
 
 def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
-                   selected_segment: int = 0):
+                   selected_segment_idx: int = 0):
     ax.cla()
 
     # Plot elevation
     segments_id = ob_track.track.segment.unique()
 
-    if selected_segment == 0:
+    if selected_segment_idx == 0:
         for cc, seg_id in zip(COLOR_LIST, segments_id):
             segment = ob_track.get_segment(seg_id)
             ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
             ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
     else:
-        segment = ob_track.get_segment(selected_segment)
-        cc = COLOR_LIST[selected_segment-1]
-        ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
-        ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
+        try:
+            segment = ob_track.get_segment(selected_segment_idx)
+            cc = COLOR_LIST[selected_segment_idx - 1]
+            ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
+            ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
+        except Exception as e:
+            print(e)
+            print(selected_segment_idx)
+            print(segment.distance)
+            print(segment.ele)
+            sys.exit(1)
 
     ax.set_ylim((ob_track.track.ele.min() * 0.8,
                  ob_track.track.ele.max() * 1.2))

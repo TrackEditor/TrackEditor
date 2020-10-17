@@ -199,9 +199,21 @@ class EditMenu(tk.Menu):
     def cut_segment(self):
         pass
 
-    @utils.not_implemented
     def reverse_segment(self):
-        pass
+        selected_segment = \
+            self.controller.shared_data.my_track.selected_segment_idx
+
+        if len(selected_segment) == 1:
+            segment_idx = selected_segment[0]
+            self.controller.shared_data.my_track.reverse_segment(segment_idx)
+            # TODO: update track_info_table
+
+        elif len(selected_segment) > 1:
+            messagebox.showerror('Warning',
+                                 'More than one segment is selected')
+        elif len(selected_segment) == 0:
+            messagebox.showerror('Warning',
+                                 'No segment is selected')
 
     @utils.not_implemented
     def insert_time(self):

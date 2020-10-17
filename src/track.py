@@ -15,7 +15,8 @@ class Track:
         self.total_uphill = 0
         self.total_downhill = 0
         self.loaded_files = []  # md5 of files in Track
-        self.selected_segment = []
+        self.selected_segment = []  # line object from matplotlib
+        self.selected_segment_idx = []  # index of the segment
 
     def add_gpx(self, file: str):
         md5_gpx = utils.md5sum(file)
@@ -31,16 +32,30 @@ class Track:
 
             self.track = pd.concat([self.track, df_gpx])
             self.track = self.track.reset_index(drop=True)
-            self._insert_positive_elevation()  # for full track
-            self._insert_negative_elevation()  # for full track
-            self._insert_distance()  # for full track
-            self._update_extremes()
-            self.total_distance = self.track.distance.iloc[-1]
-            self.total_uphill = self.track.ele_pos_cum.iloc[-1]
-            self.total_downhill = self.track.ele_neg_cum.iloc[-1]
+            self._update_summary()  # for full track
+
+    def _update_summary(self):
+        self._insert_positive_elevation()
+        self._insert_negative_elevation()
+        self._insert_distance()
+        self._update_extremes()
+        self.total_distance = self.track.distance.iloc[-1]
+        self.total_uphill = self.track.ele_pos_cum.iloc[-1]
+        self.total_downhill = self.track.ele_neg_cum.iloc[-1]
 
     def get_segment(self, index: int):
         return self.track[self.track['segment'] == index]
+
+    def reverse_segment(self, index: int):
+        print(self.track)
+        segment = self.get_segment(index)
+        rev_segment = pd.DataFrame(segment.values[::-1],
+                                   segment.index,
+                                   segment.columns)
+        self.track.loc[self.track['segment'] == index] = rev_segment
+        self._update_summary()  # for full track
+        print(self.track)
+        print('reverse_segment')
 
     def _insert_positive_elevation(self):
         self.track['ele diff'] = self.track['ele'].diff()
