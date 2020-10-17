@@ -47,15 +47,12 @@ class Track:
         return self.track[self.track['segment'] == index]
 
     def reverse_segment(self, index: int):
-        print(self.track)
         segment = self.get_segment(index)
-        rev_segment = pd.DataFrame(segment.values[::-1],
+        rev_segment = pd.DataFrame(segment.values[::-1].astype('float32'),
                                    segment.index,
                                    segment.columns)
         self.track.loc[self.track['segment'] == index] = rev_segment
         self._update_summary()  # for full track
-        print(self.track)
-        print('reverse_segment')
 
     def _insert_positive_elevation(self):
         self.track['ele diff'] = self.track['ele'].diff()
@@ -63,7 +60,8 @@ class Track:
         self.track.loc[negative_gain, 'ele diff'] = 0
 
         # Define new column
-        self.track['ele_pos_cum'] = self.track['ele diff'].cumsum()
+        self.track['ele_pos_cum'] = \
+            self.track['ele diff'].cumsum().astype('float32')
 
         # Drop temporary columns
         self.track = self.track.drop(labels=['ele diff'], axis=1)
@@ -74,7 +72,8 @@ class Track:
         self.track.loc[negative_gain, 'ele diff'] = 0
 
         # Define new column
-        self.track['ele_neg_cum'] = self.track['ele diff'].cumsum()
+        self.track['ele_neg_cum'] = \
+            self.track['ele diff'].cumsum().astype('float32')
 
         # Drop temporary columns
         self.track = self.track.drop(labels=['ele diff'], axis=1)
@@ -99,7 +98,7 @@ class Track:
         # Define new columns
         self.track['p2p_distance'] = self.track.apply(compute_distance,
                                                       axis=1)
-        self.track['distance'] = self.track.p2p_distance.cumsum()
+        self.track['distance'] = self.track.p2p_distance.cumsum().astype('float32')
 
         # Drop temporary columns
         self.track = self.track.drop(

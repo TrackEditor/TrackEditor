@@ -310,7 +310,7 @@ def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
     min_segment = min_row.segment.iloc[0]
     df_track.drop('point_distance', axis=1, inplace=True)
 
-    return min_distance, min_segment
+    return min_distance, int(min_segment)
 
 
 def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
@@ -394,17 +394,10 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
             ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
             ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
     else:
-        try:
-            segment = ob_track.get_segment(selected_segment_idx)
-            cc = COLOR_LIST[selected_segment_idx - 1]
-            ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
-            ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
-        except Exception as e:
-            print(e)
-            print(selected_segment_idx)
-            print(segment.distance)
-            print(segment.ele)
-            sys.exit(1)
+        segment = ob_track.get_segment(selected_segment_idx)
+        cc = COLOR_LIST[selected_segment_idx - 1]
+        ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
+        ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
 
     ax.set_ylim((ob_track.track.ele.min() * 0.8,
                  ob_track.track.ele.max() * 1.2))

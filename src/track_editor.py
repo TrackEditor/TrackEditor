@@ -206,7 +206,16 @@ class EditMenu(tk.Menu):
         if len(selected_segment) == 1:
             segment_idx = selected_segment[0]
             self.controller.shared_data.my_track.reverse_segment(segment_idx)
-            # TODO: update track_info_table
+
+            # Update plot
+            plots.plot_track_info(
+                self.controller.shared_data.my_track,
+                self.controller.shared_data.ax_track_info)
+
+            plots.plot_elevation(self.controller.shared_data.my_track,
+                                 self.controller.shared_data.ax_ele)
+
+            self.controller.shared_data.canvas.draw()
 
         elif len(selected_segment) > 1:
             messagebox.showerror('Warning',
