@@ -20,7 +20,6 @@ class EditMenu(tk.Menu):
 
         # Define menu
         self.editmenu = tk.Menu(parent, tearoff=0)
-        self.editmenu.add_command(label='Cut', command=self.cut_segment)
         self.editmenu.add_command(label='Reverse',
                                   command=self.reverse_segment)
         self.editmenu.add_command(label='Insert time',
@@ -29,17 +28,18 @@ class EditMenu(tk.Menu):
                                   command=self.fix_elevation)
         self.editmenu.add_command(label='Split segment',
                                   command=self.split_segment)
+        self.editmenu.add_command(label='Remove segment',
+                                  command=self.remove_segment)
         parent.add_cascade(label='Edit', menu=self.editmenu)
 
         # Time variables initialization
         self.timestamp = dt.datetime(2000, 1, 1, 0, 0, 0)
         self.speed = 0
 
-    @utils.not_implemented
-    def cut_segment(self):
-        pass
-
     def reverse_segment(self):
+        """
+        Reverse order of data for the selected segment.
+        """
         selected_segment = \
             self.controller.shared_data.my_track.selected_segment_idx
 
@@ -66,6 +66,7 @@ class EditMenu(tk.Menu):
 
     def insert_time(self):
         """
+        Add time data to the whole track.
         Open a new window to introduce time and speed, then a timestamp is
         added to the whole track
         """
@@ -129,7 +130,10 @@ class EditMenu(tk.Menu):
         lbl_label.grid(row=i, column=0, pady=10)
         spn_speed.grid(row=i, column=1)
 
-        def check_timestamp():
+        def insert_timestamp():
+            """
+            Check input data and insert timestamp
+            """
             try:
                 self.timestamp = dt.datetime(int(spn_time['year'].get()),
                                              int(spn_time['month'].get()),
@@ -164,11 +168,14 @@ class EditMenu(tk.Menu):
         btn_clear = tk.Button(master=frm_button, text='Clear',
                               command=clear_box)
         btn_submit = tk.Button(master=frm_button, text='Submit',
-                               command=check_timestamp)
+                               command=insert_timestamp)
         btn_clear.pack(side=tk.RIGHT, padx=10)
         btn_submit.pack(side=tk.RIGHT, padx=10)
 
     def fix_elevation(self):
+        """
+        Apply the elevation correction on the selected segment.
+        """
         selected_segment = \
             self.controller.shared_data.my_track.selected_segment_idx
 
@@ -185,6 +192,48 @@ class EditMenu(tk.Menu):
                                  self.controller.shared_data.ax_ele)
 
             self.controller.shared_data.canvas.draw()
+
+        elif len(selected_segment) > 1:
+            messagebox.showerror('Warning',
+                                 'More than one segment is selected')
+        elif len(selected_segment) == 0:
+            messagebox.showerror('Warning',
+                                 'No segment is selected')
+
+    def remove_segment(self):
+        selected_segment = \
+            self.controller.shared_data.my_track.selected_segment_idx
+
+        if len(selected_segment) == 1:
+            segment_idx = selected_segment[0]
+
+            msg = 'Do you want to remove the selected segment?'
+            proceed = tk.messagebox.askyesno(title='Remove segment',
+                                             message=msg)
+
+            if proceed:
+                size = \
+                    self.controller.shared_data.my_track.remove_segment(segment_idx)
+
+                # Update plot
+                if size > 0:
+                    plots.plot_track_info(
+                        self.controller.shared_data.my_track,
+                        self.controller.shared_data.ax_track_info)
+
+                    plots.plot_elevation(self.controller.shared_data.my_track,
+                                         self.controller.shared_data.ax_ele)
+                    plots.plot_track(self.controller.shared_data.my_track,
+                                     self.controller.shared_data.ax_track)
+                else:
+                    plots.plot_world(self.controller.shared_data.ax_track)
+                    plots.plot_no_elevation(self.controller.shared_data.ax_ele)
+                    plots.plot_no_info(
+                        self.controller.shared_data.ax_track_info)
+                    tk.messagebox.showwarning(
+                        title='No segment',
+                        message='Last segment has been removed.')
+                self.controller.shared_data.canvas.draw()
 
         elif len(selected_segment) > 1:
             messagebox.showerror('Warning',

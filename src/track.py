@@ -12,6 +12,7 @@ class Track:
         self.columns = ['lat', 'lon', 'ele', 'segment', 'time']
         self.track = pd.DataFrame(columns=self.columns)
         self.size = 0  # number of gpx in track
+        self.last_index = 0
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
         self.total_distance = 0
         self.total_uphill = 0
@@ -29,8 +30,8 @@ class Track:
             df_gpx = df_gpx[self.columns]
             self.loaded_files.append(md5_gpx)
             self.size += 1
-
-            df_gpx['segment'] = self.size
+            self.last_index += 1
+            df_gpx['segment'] = self.last_index
 
             self.track = pd.concat([self.track, df_gpx])
             self.track = self.track.reset_index(drop=True)
@@ -202,3 +203,20 @@ class Track:
         # Insert new elevation in track
         df_segment['ele'] = fixed_elevation
         self.track.loc[self.track['segment'] == index] = df_segment
+
+    def remove_segment(self, index: int):
+        # Drop rows in dataframe
+        idx_segment = self.track[(self.track['segment'] == index)].index
+        self.track = self.track.drop(idx_segment)
+        self.track = self.track.reset_index(drop=True)
+        self.size -= 1
+
+        # Update metadata
+        self._update_summary()
+        self.loaded_files[index-1] = None
+
+        # Clean full track if needed
+        if self.size == 0:
+            self.track = self.track.drop(self.track.index)
+
+        return self.size
