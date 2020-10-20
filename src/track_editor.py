@@ -190,8 +190,8 @@ class EditMenu(tk.Menu):
                                   command=self.reverse_segment)
         self.editmenu.add_command(label='Insert time',
                                   command=self.insert_time)
-        self.editmenu.add_command(label='Correct elevation',
-                                  command=self.correct_elevation)
+        self.editmenu.add_command(label='Fix elevation',
+                                  command=self.fix_elevation)
         self.editmenu.add_command(label='Split segment',
                                   command=self.split_segment)
         parent.add_cascade(label='Edit', menu=self.editmenu)
@@ -331,9 +331,30 @@ class EditMenu(tk.Menu):
         btn_submit.pack(side=tk.RIGHT, padx=10)
 
 
-    @utils.not_implemented
-    def correct_elevation(self):
-        pass
+    def fix_elevation(self):
+        selected_segment = \
+            self.controller.shared_data.my_track.selected_segment_idx
+
+        if len(selected_segment) == 1:
+            segment_idx = selected_segment[0]
+            self.controller.shared_data.my_track.fix_elevation(segment_idx)
+
+            # Update plot
+            plots.plot_track_info(
+                self.controller.shared_data.my_track,
+                self.controller.shared_data.ax_track_info)
+
+            plots.plot_elevation(self.controller.shared_data.my_track,
+                                 self.controller.shared_data.ax_ele)
+
+            self.controller.shared_data.canvas.draw()
+
+        elif len(selected_segment) > 1:
+            messagebox.showerror('Warning',
+                                 'More than one segment is selected')
+        elif len(selected_segment) == 0:
+            messagebox.showerror('Warning',
+                                 'No segment is selected')
 
     @utils.not_implemented
     def split_segment(self):

@@ -4,6 +4,7 @@ import datetime as dt
 import geopy.distance
 import gpxpy.gpx
 from src import utils, gpx
+from src import constants as c
 
 
 class Track:
@@ -143,3 +144,62 @@ class Track:
         # Write file
         with open(gpx_filename, 'w') as f:
             f.write(ob_gpxpy.to_xml())
+
+    def fix_elevation(self, index: int):
+        df_segment = self.get_segment(index)
+
+        # Identify and remove steep zones
+        steep_zone = [False] * df_segment.shape[0]
+        last_steep = 0
+
+        for i, (e, d) in enumerate(zip(df_segment['ele'].diff(),
+                                       df_segment['distance'])):
+            if abs(e) > c.steep_gap:
+                steep_zone[i] = True
+                last_steep = d
+
+            elif d - last_steep < c.steep_distance:
+                if d > c.steep_distance:
+                    steep_zone[i] = True
+
+        df_segment['steep_zone'] = steep_zone
+        df_no_steep = df_segment.copy()
+        df_no_steep['ele_to_fix'] = np.where(df_segment['steep_zone'] == False,
+                                             df_segment['ele'], -1)
+
+        # Fill steep zones
+        fixed_elevation = df_no_steep['ele_to_fix'].to_numpy()
+        original_elevation = df_no_steep['ele'].to_numpy()
+        fixed_steep_zone = df_no_steep['steep_zone']
+        before_x = before_y = after_x = after_y = None  # initialization
+
+        for i in range(1, len(fixed_elevation)):
+            if not df_no_steep['steep_zone'].loc[i - 1] and \
+                    df_no_steep['steep_zone'].loc[i]:
+                before_x = np.arange(i - 11, i - 1)
+                before_y = fixed_elevation[i - 11:i - 1]
+                after_x = None
+                after_y = None
+
+            if df_no_steep['steep_zone'].loc[i - 1] and not \
+                    df_no_steep['steep_zone'].loc[i]:
+                after_x = np.arange(i, i + 10)
+                after_y = fixed_elevation[i:i + 10]
+                coef = np.polyfit(np.concatenate((before_x, after_x)),
+                                  np.concatenate((before_y, after_y)),
+                                  3)
+                for j in range(before_x[-1], after_x[0]):
+                    fixed_elevation[j] = np.polyval(coef, j)
+                    fixed_steep_zone[j] = False
+
+        if not after_y and not after_x:
+            print('Applying moving average on tail.')
+            n = c.steep_k_moving_average
+            fixed_elevation[before_x[-1]:] = np.concatenate((
+                original_elevation[before_x[-1]:before_x[-1] + n - 1],
+                utils.moving_average(original_elevation[before_x[-1]:], n)))
+            fixed_steep_zone[before_x[-1]:] = True
+
+        # Insert new elevation in track
+        df_segment['ele'] = fixed_elevation
+        self.track.loc[self.track['segment'] == index] = df_segment

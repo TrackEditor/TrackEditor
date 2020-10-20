@@ -1,6 +1,7 @@
 import hashlib
 import tkinter.messagebox as messagebox
 import types
+import numpy as np
 
 
 def md5sum(file: str) -> str:
@@ -53,3 +54,15 @@ def not_implemented(function: types.FunctionType):
             'Warning',
             f'Not implemented functionality: {function.__name__}')
     return wrapper_function
+
+
+def moving_average(a, n: int = 3):
+    '''
+    Naive moving average implementation
+    :param a: numpy array
+    :param n: point mean values
+    :return: smooth numpy array
+    '''
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
