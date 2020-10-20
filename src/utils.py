@@ -1,4 +1,5 @@
 import hashlib
+import tkinter as tk
 import tkinter.messagebox as messagebox
 import types
 import numpy as np
@@ -57,12 +58,22 @@ def not_implemented(function: types.FunctionType):
 
 
 def moving_average(a, n: int = 3):
-    '''
+    """
     Naive moving average implementation
     :param a: numpy array
     :param n: point mean values
     :return: smooth numpy array
-    '''
+    """
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
+
+
+def quit_app(parent: tk.Tk):
+    """
+    Quit the app safely when using exit option or cross symbol.
+    :param parent: tkinter window of the main app
+    """
+    parent.quit()  # stops mainloop
+    parent.destroy()  # this is necessary on Windows to prevent
+    # Fatal Python Error: PyEval_RestoreThread: NULL tstate

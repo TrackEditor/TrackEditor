@@ -192,8 +192,7 @@ class Track:
                     fixed_elevation[j] = np.polyval(coef, j)
                     fixed_steep_zone[j] = False
 
-        if not after_y and not after_x:
-            print('Applying moving average on tail.')
+        if not after_y and not after_x and before_x and before_y:
             n = c.steep_k_moving_average
             fixed_elevation[before_x[-1]:] = np.concatenate((
                 original_elevation[before_x[-1]:before_x[-1] + n - 1],
