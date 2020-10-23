@@ -357,6 +357,17 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
         # TODO: for some reason this is executed as many times as available
         #  segments, ask in stackoverflow?
 
+        # Check click limits before operation
+        xlim = ax_track.get_xlim()
+        ylim = ax_track.get_ylim()
+        try:
+            if event.xdata < min(xlim) or event.xdata > max(xlim) or \
+                    event.ydata < min(ylim) or event.ydata > max(ylim):
+                return
+        except TypeError:
+            return
+
+        # Click position to distance
         if event.xdata and event.ydata:
             point_distance, seg2select = \
                 get_closest_segment(ob_track.track, (event.ydata, event.xdata))
@@ -369,7 +380,8 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
             deselect_segment()  # deselect current segment if needed
             select_segment(seg2select)
 
-            plot_elevation(ob_track, ax_elevation, selected_segment_idx=seg2select)
+            plot_elevation(ob_track, ax_elevation,
+                           selected_segment_idx=seg2select)
             select_track_info(seg2select=seg2select)
         else:
             deselect_segment()
