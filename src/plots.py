@@ -329,7 +329,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
         selected_segment, = ax_track.plot(segment.lon, segment.lat,
                                           color=COLOR_LIST[seg2select - 1],
                                           linewidth=4,
-                                          zorder=20)
+                                          zorder=10)
         ob_track.selected_segment.append(selected_segment)
         ob_track.selected_segment_idx.append(seg2select)
 
@@ -390,7 +390,8 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
 
         fig_track.canvas.draw()
 
-    fig_track.canvas.mpl_connect('button_press_event', on_click)
+    cid = fig_track.canvas.mpl_connect('button_press_event', on_click)
+    return cid
 
 
 def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,

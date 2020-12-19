@@ -2,9 +2,167 @@ import datetime as dt
 import tkinter as tk
 import tkinter.messagebox as messagebox
 import collections
+import math
+from bisect import bisect
+import matplotlib.pyplot as plt
+import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.widgets as widgets
 
 import src.utils as utils
 import src.plots as plots
+
+
+INDEX = 0
+MPL_BUTTON = None
+
+
+class SplitInteraction:
+    def __init__(self, vline, filled_area, ele_line, point, axes, df, canvas, track, controller):
+        self.vline = vline
+        self.filled_area = [filled_area, None]
+        self.ele_line = [ele_line, None]
+        self.point = point
+        self.ax = axes
+        self.df = df
+        self.index = 0
+        self.press = None
+        self.cidpress = None
+        self.cidrelease = None
+        self.cidmotion = None
+        self.canvas = canvas
+        self.max_index = df.index[-1]
+        self.track = track
+        self.controller = controller
+
+    def connect(self):
+        """connect to all the events we need"""
+        print('connection')
+        self.cidpress = self.canvas.mpl_connect(
+            'button_press_event', self.on_press)
+        self.cidrelease = self.canvas.mpl_connect(
+            'button_release_event', self.on_release)
+        self.cidmotion = self.canvas.mpl_connect(
+            'motion_notify_event', self.on_motion)
+
+        print(f'cidpress: {cidpress}')
+        print(f'cidrelease: {cidrelease}')
+        print(f'cidmotion: {cidmotion}')
+
+    def on_press(self, event):
+        """on button press we will see if the mouse is over us and store some
+        data"""
+        print('on_press')
+        if event.inaxes != self.vline.axes:
+            print('leaves here: abc')
+            return
+
+        contains, attrd = self.vline.contains(event)
+        if not contains:
+            print('leaves here: def')
+            return
+
+        # print('event contains', self.rect.get_ydata())
+        x0 = self.vline.get_xdata()[0]
+        print(f'x0 = {x0}')
+        self.press = x0, event.xdata
+
+    def on_motion(self, event):
+        """on motion we will move the rect if the mouse is over us"""
+        # print('on_motion')
+        if self.press is None:
+            return
+
+        if event.inaxes != self.vline.axes:
+            return
+
+        x0, xpress = self.press
+        dx = event.xdata - xpress
+
+        # Move objects
+        distance = self.df.distance
+        self.index = bisect(distance, x0 + dx)
+        if self.index < 0:
+            self.index = 0
+        elif self.index > self.max_index:
+            self.index = self.max_index
+        print(self.index, x0, dx)
+
+        self.vline.set_xdata(2 * [distance[self.index]])
+
+        # Update position
+        try:
+            self.point.remove()
+        except Exception as e:
+            print(e)
+
+        print(self.df.lat[self.index], self.df.lon[self.index])
+        self.point = self.ax[0].scatter(self.df.lon[self.index],
+                                        self.df.lat[self.index],
+                                        s=35, marker='o', c='r', zorder=20)
+
+        # Update elevation
+        try:
+            self.ele_line[0][0].remove()
+            self.ele_line[1][0].remove()
+            self.filled_area[0].remove()
+            self.filled_area[1].remove()
+        except (IndexError, TypeError) as e:
+            print(e)
+
+        self.ele_line[0] = self.ax[1].plot(
+            self.df.distance[:self.index+1],
+            self.df.ele[:self.index+1],
+            color='r', linewidth=2)
+        self.ele_line[1] = self.ax[1].plot(
+            self.df.distance[self.index:],
+            self.df.ele[self.index:],
+            color='b', linewidth=2)
+
+        self.filled_area[0] = self.ax[1].fill_between(
+            self.df.distance[:self.index+1],
+            self.df.ele[:self.index+1],
+            color='r', alpha=0.2)
+        self.filled_area[1] = self.ax[1].fill_between(
+            self.df.distance[self.index:],
+            self.df.ele[self.index:],
+            color='b', alpha=0.2)
+
+        self.canvas.draw()
+
+    def on_release(self, event):
+        """on release we reset the press data"""
+        print('on_release')
+
+        self.press = None
+
+        def divide_segment(event):
+            print('---divide_segment---')
+            print(self.df.segment.iloc[0])
+            print(self.index)
+            self.track.divide_segment(self.df.segment.iloc[0], self.index)
+            self.disconnect()
+
+            # Update plot
+            plots.plot_track(self.controller.shared_data.my_track,
+                             self.controller.shared_data.ax_track)
+            plots.plot_track_info(
+                self.controller.shared_data.my_track,
+                self.controller.shared_data.ax_track_info)
+
+            plots.plot_elevation(self.controller.shared_data.my_track,
+                                 self.controller.shared_data.ax_ele)
+
+        MPL_BUTTON.on_clicked(divide_segment)
+
+        self.canvas.draw()
+
+    def disconnect(self):
+        """disconnect all the stored connection ids"""
+        print('disconnect')
+        self.canvas.mpl_disconnect(self.cidpress)
+        self.canvas.mpl_disconnect(self.cidrelease)
+        self.canvas.mpl_disconnect(self.cidmotion)
 
 
 class EditMenu(tk.Menu):
@@ -212,8 +370,8 @@ class EditMenu(tk.Menu):
                                              message=msg)
 
             if proceed:
-                size = \
-                    self.controller.shared_data.my_track.remove_segment(segment_idx)
+                size = self.controller.shared_data.my_track.remove_segment(
+                    segment_idx)
 
                 # Update plot
                 if size > 0:
@@ -242,6 +400,58 @@ class EditMenu(tk.Menu):
             messagebox.showerror('Warning',
                                  'No segment is selected')
 
-    @utils.not_implemented
     def split_segment(self):
-        pass
+        global MPL_BUTTON
+
+        # Selection management
+        selected_segment = \
+            self.controller.shared_data.my_track.selected_segment_idx
+
+        if len(selected_segment) > 1:
+            messagebox.showerror('Warning',
+                                 'More than one segment is selected')
+            return
+        elif len(selected_segment) == 0:
+            messagebox.showerror('Warning',
+                                 'No segment is selected')
+            return
+        else:
+            segment_idx = selected_segment[0]
+            df_segment = \
+                self.controller.shared_data.my_track.get_segment(segment_idx)
+
+        # Common objects management
+        ax_track = self.controller.shared_data.ax_track
+        ax_ele = self.controller.shared_data.ax_ele
+        canvas = self.controller.shared_data.canvas
+
+        # canvas.mpl_disconnect(self.controller.shared_data.cid)
+        # print(f'cid (edit_menu.py) ', self.controller.shared_data.cid)
+
+        plots.plot_elevation(self.controller.shared_data.my_track,
+                             self.controller.shared_data.ax_ele,
+                             selected_segment_idx=segment_idx)
+
+        area = ax_ele.fill_between(df_segment.distance, df_segment.ele,
+                                   color='b', alpha=0.2)
+        line = ax_ele.plot(df_segment.distance, df_segment.ele,
+                           color='b', linewidth=2)
+
+        _vline = ax_ele.axvline(df_segment.distance[0], linewidth=2)
+
+        _point = self.controller.shared_data.ax_track.scatter(
+            df_segment.lon[0], df_segment.lat[0],
+            s=35, marker='o', c='r', zorder=20)
+
+        button_position = plt.axes([0.8, 0.025, 0.1, 0.04])
+        MPL_BUTTON = widgets.Button(button_position, 'Done', hovercolor='0.975')
+
+        self.controller.shared_data.fig_track.canvas.draw()
+
+        self.controller.shared_data.fig_ele.canvas.draw()
+
+        interaction = SplitInteraction(_vline, area, line, _point,
+                                       [ax_track, ax_ele], df_segment, canvas,
+                                       self.controller.shared_data.my_track,
+                                       self.controller)
+        interaction.connect()

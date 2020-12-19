@@ -220,3 +220,26 @@ class Track:
             self.track = self.track.drop(self.track.index)
 
         return self.size
+
+    def divide_segment(self, segment_index: int, div_index: int):
+        self.track['index'] = self.track.index
+        first_segment_index = self.track[
+            self.track.segment == segment_index].first_valid_index()
+
+        def segment_index_modifier(row):
+            if row['segment'] < segment_index:
+                return row['segment']
+            elif row['segment'] > segment_index:
+                return row['segment'] + 1
+            else:
+                if row['index'] < first_segment_index + div_index:
+                    return row['segment']
+                else:
+                    return row['segment'] + 1
+
+        self.track['segment'] = \
+            self.track.apply(lambda row: segment_index_modifier(row), axis=1)
+
+        self.track = self.track.drop(['index'], axis=1)
+
+        return True

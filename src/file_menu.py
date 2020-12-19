@@ -55,12 +55,14 @@ class FileMenu(tk.Menu):
             track_info_table = plots.plot_track_info(
                 self.controller.shared_data.my_track,
                 self.controller.shared_data.ax_track_info)
-            plots.segment_selection(self.controller.shared_data.my_track,
-                                    self.controller.shared_data.ax_track,
-                                    self.controller.shared_data.ax_ele,
-                                    self.controller.shared_data.fig_track,
-                                    track_info_table)
+            self.controller.shared_data.cid = plots.segment_selection(
+                self.controller.shared_data.my_track,
+                self.controller.shared_data.ax_track,
+                self.controller.shared_data.ax_ele,
+                self.controller.shared_data.fig_track,
+                track_info_table)
             self.controller.shared_data.canvas.draw()
+            print(f'cid (file_menu.py) ', self.controller.shared_data.cid)
 
     def load_session(self):
         proceed = True
