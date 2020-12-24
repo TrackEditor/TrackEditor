@@ -8,15 +8,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.widgets as widgets
+import types
 
 import src.utils as utils
 import src.plots as plots
 
-MPL_BUTTON = None
-
 
 class SplitSegment:
-    def __init__(self, shared_data, df_segment):
+    def __init__(self, shared_data, df_segment: pd.DataFrame):
         # Input data properties
         self.shared_data = shared_data
         self.df_segment = df_segment
@@ -47,7 +46,6 @@ class SplitSegment:
             - point: will be display in map corresponding to vline point
             - line, area: change color to visualize each new segment
         """
-        global MPL_BUTTON
 
         # Common objects management
         ax_ele = self.shared_data.ax_ele
@@ -69,12 +67,12 @@ class SplitSegment:
             self.df_segment.lon[0], self.df_segment.lat[0],
             s=35, marker='o', c='r', zorder=20)
 
-        button_position = plt.axes([0.8, 0.025, 0.1, 0.04])
-        MPL_BUTTON = widgets.Button(button_position, 'Done',
-                                    hovercolor='0.975')
+        # Enable button
+        self.shared_data.b_done.label._text = 'Done'
+        self.shared_data.b_done.hovercolor = '0.95'
+        self.shared_data.b_done.label._color = '0.05'
 
         self.shared_data.fig_track.canvas.draw()
-
         self.shared_data.fig_ele.canvas.draw()
 
         return vline, [area, None], [line, None], point
@@ -90,8 +88,6 @@ class SplitSegment:
         # These prints are needed to work. They produce an exception, but
         # they make this utility to work for some reason...
         print(f'cidpress: {cidpress}')
-        print(f'cidrelease: {cidrelease}')
-        print(f'cidmotion: {cidmotion}')
 
     def on_press(self, event):
         """on button press we will see if the mouse is over us and store some
@@ -188,13 +184,18 @@ class SplitSegment:
             plots.plot_elevation(self.shared_data.my_track,
                                  self.shared_data.ax_ele)
 
-        MPL_BUTTON.on_clicked(divide_segment)
+        self.shared_data.b_done.on_clicked(divide_segment)
 
         self.canvas.draw()
 
     def disconnect(self):
         """disconnect all the stored connection ids"""
+        # Disable button
+        self.shared_data.b_done._text = '$Done$'
+        self.shared_data.b_done.hovercolor = self.shared_data.b_done.color
+        self.shared_data.b_done.label._color = '0.6'
+
+        # Disconnect
         self.canvas.mpl_disconnect(self.cidpress)
         self.canvas.mpl_disconnect(self.cidrelease)
         self.canvas.mpl_disconnect(self.cidmotion)
-

@@ -5,6 +5,7 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.backends.backend_tkagg as backend_tkagg
+import matplotlib.widgets as widgets
 import types
 
 import src.constants as c
@@ -81,6 +82,12 @@ class MainApplication(tk.Frame):
         self.shared_data.ax_track_info = plt.gca()
         self.shared_data.fig_track_info = plt.gcf()
         plots.plot_no_info(self.shared_data.ax_track_info)
+
+        # Button
+        button_position = plt.axes([0.8, 0.025, 0.1, 0.04])
+        self.shared_data.b_done = widgets.Button(button_position, '$Done$')
+        self.shared_data.b_done.hovercolor = self.shared_data.b_done.color
+        self.shared_data.b_done.label._color = '0.6'
 
         self.shared_data.canvas.get_tk_widget().pack(expand=True, fill='both')
 
