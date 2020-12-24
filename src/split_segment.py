@@ -1,0 +1,200 @@
+import datetime as dt
+import tkinter as tk
+import tkinter.messagebox as messagebox
+import collections
+import math
+from bisect import bisect
+import matplotlib.pyplot as plt
+import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.widgets as widgets
+
+import src.utils as utils
+import src.plots as plots
+
+MPL_BUTTON = None
+
+
+class SplitSegment:
+    def __init__(self, shared_data, df_segment):
+        # Input data properties
+        self.shared_data = shared_data
+        self.df_segment = df_segment
+        self.segment_idx = self.df_segment.segment[0]  # idx selected segment
+        self.max_index = df_segment.index[-1]  # last index in dataframe
+        self.ax = [shared_data.ax_track, shared_data.ax_ele]
+        self.track = shared_data.my_track
+        self.canvas = shared_data.canvas
+
+        # Prepare initial plot for splitting option
+        self.vline, self.filled_area, self.ele_line, self.point = \
+            self.initial_plot()
+
+        # Extra properties
+        self.index = 0  # variable to play with dataframe index
+        self.press = None
+        self.cidpress = None
+        self.cidrelease = None
+        self.cidmotion = None
+
+    def initial_plot(self):
+        """
+        Create to different segments and a vertical line which will be moved
+        to adapt sub-segment length.
+        Help for output:
+            - vline: vertical line which will be denote the splitting point in
+                elevation plot
+            - point: will be display in map corresponding to vline point
+            - line, area: change color to visualize each new segment
+        """
+        global MPL_BUTTON
+
+        # Common objects management
+        ax_ele = self.shared_data.ax_ele
+
+        # Create plot and establish interaction
+        plots.plot_elevation(self.shared_data.my_track,
+                             self.shared_data.ax_ele,
+                             selected_segment_idx=self.segment_idx)
+
+        area = ax_ele.fill_between(self.df_segment.distance,
+                                   self.df_segment.ele,
+                                   color='b', alpha=0.2)
+        line = ax_ele.plot(self.df_segment.distance, self.df_segment.ele,
+                           color='b', linewidth=2)
+
+        vline = ax_ele.axvline(self.df_segment.distance[0], linewidth=2)
+
+        point = self.shared_data.ax_track.scatter(
+            self.df_segment.lon[0], self.df_segment.lat[0],
+            s=35, marker='o', c='r', zorder=20)
+
+        button_position = plt.axes([0.8, 0.025, 0.1, 0.04])
+        MPL_BUTTON = widgets.Button(button_position, 'Done',
+                                    hovercolor='0.975')
+
+        self.shared_data.fig_track.canvas.draw()
+
+        self.shared_data.fig_ele.canvas.draw()
+
+        return vline, [area, None], [line, None], point
+
+    def connect(self):
+        """connect to all the events we need"""
+        self.cidpress = self.canvas.mpl_connect(
+            'button_press_event', self.on_press)
+        self.cidrelease = self.canvas.mpl_connect(
+            'button_release_event', self.on_release)
+        self.cidmotion = self.canvas.mpl_connect(
+            'motion_notify_event', self.on_motion)
+        # These prints are needed to work. They produce an exception, but
+        # they make this utility to work for some reason...
+        print(f'cidpress: {cidpress}')
+        print(f'cidrelease: {cidrelease}')
+        print(f'cidmotion: {cidmotion}')
+
+    def on_press(self, event):
+        """on button press we will see if the mouse is over us and store some
+        data"""
+        if event.inaxes != self.vline.axes:
+            return
+
+        contains, attrd = self.vline.contains(event)
+        if not contains:
+            return
+
+        x0 = self.vline.get_xdata()[0]
+
+        self.press = x0, event.xdata
+
+    def on_motion(self, event):
+        """on motion we will move the rect if the mouse is over us"""
+        if self.press is None:
+            return
+
+        if event.inaxes != self.vline.axes:
+            return
+
+        x0, xpress = self.press
+        dx = event.xdata - xpress
+
+        # Move objects
+        distance = self.df_segment.distance
+        self.index = bisect(distance, x0 + dx)
+        if self.index < 0:
+            self.index = 0
+        elif self.index > self.max_index:
+            self.index = self.max_index
+
+        self.vline.set_xdata(2 * [distance[self.index]])
+
+        # Update position
+        try:
+            self.point.remove()
+        except Exception as e:
+            print(e)
+
+        self.point = self.ax[0].scatter(self.df_segment.lon[self.index],
+                                        self.df_segment.lat[self.index],
+                                        s=35, marker='o', c='r', zorder=20)
+
+        # Update elevation
+        try:
+            self.ele_line[0][0].remove()
+            self.ele_line[1][0].remove()
+            self.filled_area[0].remove()
+            self.filled_area[1].remove()
+        except (IndexError, TypeError) as e:
+            print(e)
+
+        self.ele_line[0] = self.ax[1].plot(
+            self.df_segment.distance[:self.index+1],
+            self.df_segment.ele[:self.index+1],
+            color='r', linewidth=2)
+        self.ele_line[1] = self.ax[1].plot(
+            self.df_segment.distance[self.index:],
+            self.df_segment.ele[self.index:],
+            color='b', linewidth=2)
+
+        self.filled_area[0] = self.ax[1].fill_between(
+            self.df_segment.distance[:self.index+1],
+            self.df_segment.ele[:self.index+1],
+            color='r', alpha=0.2)
+        self.filled_area[1] = self.ax[1].fill_between(
+            self.df_segment.distance[self.index:],
+            self.df_segment.ele[self.index:],
+            color='b', alpha=0.2)
+
+        self.canvas.draw()
+
+    def on_release(self, event):
+        """on release we reset the press data"""
+
+        self.press = None
+
+        def divide_segment(_event):
+            self.track.divide_segment(
+                self.df_segment.segment.iloc[0],
+                self.index)
+            self.disconnect()
+
+            # Update plot
+            plots.plot_track(self.shared_data.my_track,
+                             self.shared_data.ax_track)
+            plots.plot_track_info(
+                self.shared_data.my_track,
+                self.shared_data.ax_track_info)
+
+            plots.plot_elevation(self.shared_data.my_track,
+                                 self.shared_data.ax_ele)
+
+        MPL_BUTTON.on_clicked(divide_segment)
+
+        self.canvas.draw()
+
+    def disconnect(self):
+        """disconnect all the stored connection ids"""
+        self.canvas.mpl_disconnect(self.cidpress)
+        self.canvas.mpl_disconnect(self.cidrelease)
+        self.canvas.mpl_disconnect(self.cidmotion)
+

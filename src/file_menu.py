@@ -62,7 +62,6 @@ class FileMenu(tk.Menu):
                 self.controller.shared_data.fig_track,
                 track_info_table)
             self.controller.shared_data.canvas.draw()
-            print(f'cid (file_menu.py) ', self.controller.shared_data.cid)
 
     def load_session(self):
         proceed = True
