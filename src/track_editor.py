@@ -85,9 +85,9 @@ class MainApplication(tk.Frame):
 
         # Button
         button_position = plt.axes([0.8, 0.025, 0.1, 0.04])
-        self.shared_data.b_done = widgets.Button(button_position, '$Done$')
-        self.shared_data.b_done.hovercolor = self.shared_data.b_done.color
-        self.shared_data.b_done.label._color = '0.6'
+        self.shared_data.btn_done = widgets.Button(button_position, '$Done$')
+        self.shared_data.btn_done.hovercolor = self.shared_data.btn_done.color
+        self.shared_data.btn_done.label._color = '0.6'
 
         self.shared_data.canvas.get_tk_widget().pack(expand=True, fill='both')
 
