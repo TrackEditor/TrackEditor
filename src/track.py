@@ -10,7 +10,7 @@ from src import constants as c
 class Track:
     def __init__(self):
         self.columns = ['lat', 'lon', 'ele', 'segment', 'time']
-        self.track = pd.DataFrame(columns=self.columns)
+        self.df_track = pd.DataFrame(columns=self.columns)
         self.size = 0  # number of gpx in track
         self.last_index = 0
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
@@ -33,8 +33,8 @@ class Track:
             self.last_index += 1
             df_gpx['segment'] = self.last_index
 
-            self.track = pd.concat([self.track, df_gpx])
-            self.track = self.track.reset_index(drop=True)
+            self.df_track = pd.concat([self.df_track, df_gpx])
+            self.df_track = self.df_track.reset_index(drop=True)
             self._update_summary()  # for full track
 
     def _update_summary(self):
@@ -42,58 +42,59 @@ class Track:
         self._insert_negative_elevation()
         self._insert_distance()
         self._update_extremes()
-        self.total_distance = self.track.distance.iloc[-1]
-        self.total_uphill = self.track.ele_pos_cum.iloc[-1]
-        self.total_downhill = self.track.ele_neg_cum.iloc[-1]
+        self.total_distance = self.df_track.distance.iloc[-1]
+        self.total_uphill = self.df_track.ele_pos_cum.iloc[-1]
+        self.total_downhill = self.df_track.ele_neg_cum.iloc[-1]
 
     def get_segment(self, index: int):
-        return self.track[self.track['segment'] == index]
+        return self.df_track[self.df_track['segment'] == index]
 
     def reverse_segment(self, index: int):
         segment = self.get_segment(index)
         rev_segment = pd.DataFrame(segment.values[::-1].astype('float32'),
                                    segment.index,
                                    segment.columns)
-        self.track.loc[self.track['segment'] == index] = rev_segment
+        self.df_track.loc[self.df_track['segment'] == index] = rev_segment
         self._update_summary()  # for full track
 
     def insert_timestamp(self, initial_time, speed):
-        self.track['time'] = \
-            self.track.apply(lambda row:
-                             initial_time +
-                             dt.timedelta(hours=row['distance']/speed), axis=1)
+        self.df_track['time'] = \
+            self.df_track.apply(
+                lambda row: initial_time +
+                            dt.timedelta(hours=row['distance']/speed),
+                axis=1)
 
     def _insert_positive_elevation(self):
-        self.track['ele diff'] = self.track['ele'].diff()
-        negative_gain = self.track['ele diff'] < 0
-        self.track.loc[negative_gain, 'ele diff'] = 0
+        self.df_track['ele diff'] = self.df_track['ele'].diff()
+        negative_gain = self.df_track['ele diff'] < 0
+        self.df_track.loc[negative_gain, 'ele diff'] = 0
 
         # Define new column
-        self.track['ele_pos_cum'] = \
-            self.track['ele diff'].cumsum().astype('float32')
+        self.df_track['ele_pos_cum'] = \
+            self.df_track['ele diff'].cumsum().astype('float32')
 
         # Drop temporary columns
-        self.track = self.track.drop(labels=['ele diff'], axis=1)
+        self.df_track = self.df_track.drop(labels=['ele diff'], axis=1)
 
     def _insert_negative_elevation(self):
-        self.track['ele diff'] = self.track['ele'].diff()
-        negative_gain = self.track['ele diff'] > 0
-        self.track.loc[negative_gain, 'ele diff'] = 0
+        self.df_track['ele diff'] = self.df_track['ele'].diff()
+        negative_gain = self.df_track['ele diff'] > 0
+        self.df_track.loc[negative_gain, 'ele diff'] = 0
 
         # Define new column
-        self.track['ele_neg_cum'] = \
-            self.track['ele diff'].cumsum().astype('float32')
+        self.df_track['ele_neg_cum'] = \
+            self.df_track['ele diff'].cumsum().astype('float32')
 
         # Drop temporary columns
-        self.track = self.track.drop(labels=['ele diff'], axis=1)
+        self.df_track = self.df_track.drop(labels=['ele diff'], axis=1)
 
     def _insert_distance(self):
         # Shift latitude and longitude (such way that first point is 0km)
-        self.track['lat_shift'] = pd.concat(
-            [pd.Series(np.nan), self.track.lat[0:-1]]).\
+        self.df_track['lat_shift'] = pd.concat(
+            [pd.Series(np.nan), self.df_track.lat[0:-1]]).\
             reset_index(drop=True)
-        self.track['lon_shift'] = pd.concat(
-            [pd.Series(np.nan), self.track.lon[0:-1]]).\
+        self.df_track['lon_shift'] = pd.concat(
+            [pd.Series(np.nan), self.df_track.lon[0:-1]]).\
             reset_index(drop=True)
 
         def compute_distance(row):
@@ -105,18 +106,19 @@ class Track:
                 return 0
 
         # Define new columns
-        self.track['p2p_distance'] = self.track.apply(compute_distance,
-                                                      axis=1)
-        self.track['distance'] = \
-            self.track.p2p_distance.cumsum().astype('float32')
+        self.df_track['p2p_distance'] = self.df_track.apply(compute_distance,
+                                                            axis=1)
+        self.df_track['distance'] = \
+            self.df_track.p2p_distance.cumsum().astype('float32')
 
         # Drop temporary columns
-        self.track = self.track.drop(
+        self.df_track = self.df_track.drop(
             labels=['lat_shift', 'lon_shift', 'p2p_distance'], axis=1)
 
     def _update_extremes(self):
-        self.extremes = (self.track["lat"].min(), self.track["lat"].max(),
-                         self.track["lon"].min(), self.track["lon"].max())
+        self.extremes = \
+            (self.df_track["lat"].min(), self.df_track["lat"].max(),
+             self.df_track["lon"].min(), self.df_track["lon"].max())
 
     def save_gpx(self, gpx_filename: str):
         # Create track
@@ -125,7 +127,7 @@ class Track:
         ob_gpxpy.tracks.append(gpx_track)
 
         # Create segments in track
-        for seg_id in self.track.segment.unique():
+        for seg_id in self.df_track.segment.unique():
             gpx_segment = gpxpy.gpx.GPXTrackSegment()
             gpx_track.segments.append(gpx_segment)
 
@@ -202,13 +204,13 @@ class Track:
 
         # Insert new elevation in track
         df_segment['ele'] = fixed_elevation
-        self.track.loc[self.track['segment'] == index] = df_segment
+        self.df_track.loc[self.df_track['segment'] == index] = df_segment
 
     def remove_segment(self, index: int):
         # Drop rows in dataframe
-        idx_segment = self.track[(self.track['segment'] == index)].index
-        self.track = self.track.drop(idx_segment)
-        self.track = self.track.reset_index(drop=True)
+        idx_segment = self.df_track[(self.df_track['segment'] == index)].index
+        self.df_track = self.df_track.drop(idx_segment)
+        self.df_track = self.df_track.reset_index(drop=True)
         self.size -= 1
 
         # Update metadata
@@ -217,12 +219,12 @@ class Track:
 
         # Clean full track if needed
         if self.size == 0:
-            self.track = self.track.drop(self.track.index)
+            self.df_track = self.df_track.drop(self.df_track.index)
 
         return self.size
 
     def divide_segment(self, segment_index: int, div_index: int):
-        self.track['index'] = self.track.index
+        self.df_track['index'] = self.df_track.index
 
         def segment_index_modifier(row):
             if row['segment'] < segment_index:
@@ -235,20 +237,21 @@ class Track:
                 else:
                     return row['segment'] + 1
 
-        self.track['segment'] = \
-            self.track.apply(lambda row: segment_index_modifier(row), axis=1)
+        self.df_track['segment'] = \
+            self.df_track.apply(lambda row: segment_index_modifier(row),
+                                axis=1)
 
-        self.track = self.track.drop(['index'], axis=1)
+        self.df_track = self.df_track.drop(['index'], axis=1)
 
         return True
 
     def change_order(self, new_order: dict):
-        self.track.segment = self.track.apply(
+        self.df_track.segment = self.df_track.apply(
             lambda row: new_order[row.segment],
             axis=1)
 
-        self.track['index1'] = self.track.index
-        self.track = self.track.sort_values(by=['segment', 'index1'])
-        self.track = self.track.drop(labels=['index1'], axis=1)
-        self.track = self.track.reset_index(drop=True)
+        self.df_track['index1'] = self.df_track.index
+        self.df_track = self.df_track.sort_values(by=['segment', 'index1'])
+        self.df_track = self.df_track.drop(labels=['index1'], axis=1)
+        self.df_track = self.df_track.reset_index(drop=True)
         self._update_summary()  # for full track

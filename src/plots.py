@@ -236,7 +236,7 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
     track_color = []
 
     # Build segments info table
-    segments_id = ob_track.track.segment.unique()
+    segments_id = ob_track.df_track.segment.unique()
 
     for cc, seg_id in zip(COLOR_LIST, segments_id):
         distance_lbl = get_distance_label(ob_track, segment_id=seg_id)
@@ -308,7 +308,7 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     ax.imshow(map_img, zorder=0, extent=bbox, aspect='equal')
 
     # Plot track
-    segments_id = ob_track.track.segment.unique()
+    segments_id = ob_track.df_track.segment.unique()
     for cc, seg_id in zip(COLOR_LIST, segments_id):
         segment = ob_track.get_segment(seg_id)
         reduced_segment = point_reduction(segment)
@@ -390,7 +390,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
         # Click position to distance
         if event.xdata and event.ydata:
             point_distance, seg2select = \
-                get_closest_segment(ob_track.track, (event.ydata, event.xdata))
+                get_closest_segment(ob_track.df_track, (event.ydata, event.xdata))
         else:  # click outside plot
             point_distance = 1e+10
             seg2select = 0
@@ -419,7 +419,7 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
     ax.cla()
 
     # Plot elevation
-    segments_id = ob_track.track.segment.unique()
+    segments_id = ob_track.df_track.segment.unique()
 
     if selected_segment_idx == 0:
         for cc, seg_id in zip(COLOR_LIST, segments_id):
@@ -432,8 +432,8 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
         ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
         ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
 
-    ax.set_ylim((ob_track.track.ele.min() * 0.8,
-                 ob_track.track.ele.max() * 1.2))
+    ax.set_ylim((ob_track.df_track.ele.min() * 0.8,
+                 ob_track.df_track.ele.max() * 1.2))
 
     # Set labels
     dist_label = [f'{int(item)} km' for item in ax.get_xticks()]

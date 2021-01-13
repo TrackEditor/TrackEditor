@@ -45,18 +45,18 @@ class FileMenu(tk.Menu):
             filetypes=[('Gps data file', '*.gpx'), ('All files', '*')])
 
         if gpx_file:  # user may close filedialog
-            self.controller.shared_data.my_track.add_gpx(gpx_file.name)
+            self.controller.shared_data.obj_track.add_gpx(gpx_file.name)
 
             # Insert plot
-            plots.plot_track(self.controller.shared_data.my_track,
+            plots.plot_track(self.controller.shared_data.obj_track,
                              self.controller.shared_data.ax_track)
-            plots.plot_elevation(self.controller.shared_data.my_track,
+            plots.plot_elevation(self.controller.shared_data.obj_track,
                                  self.controller.shared_data.ax_ele)
             track_info_table = plots.plot_track_info(
-                self.controller.shared_data.my_track,
+                self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track_info)
             self.controller.shared_data.cid = plots.segment_selection(
-                self.controller.shared_data.my_track,
+                self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track,
                 self.controller.shared_data.ax_ele,
                 self.controller.shared_data.fig_track,
@@ -66,7 +66,7 @@ class FileMenu(tk.Menu):
     def load_session(self):
         proceed = True
 
-        if self.controller.shared_data.my_track.size > 0:
+        if self.controller.shared_data.obj_track.size > 0:
             message = \
                 'Current session will be deleted. Do you wish to proceed?'
             proceed = messagebox.askokcancel(title='Load session',
@@ -84,30 +84,30 @@ class FileMenu(tk.Menu):
                     session_meta = store.get_storer('session').attrs.metadata
 
                     # Load new track
-                    self.controller.shared_data.my_track.track = session_track
-                    self.controller.shared_data.my_track.loaded_files = \
+                    self.controller.shared_data.obj_track.df_track = session_track
+                    self.controller.shared_data.obj_track.loaded_files = \
                         session_meta.loaded_files
-                    self.controller.shared_data.my_track.size = \
+                    self.controller.shared_data.obj_track.size = \
                         session_meta.size
-                    self.controller.shared_data.my_track.total_distance = \
+                    self.controller.shared_data.obj_track.total_distance = \
                         session_meta.total_distance
-                    self.controller.shared_data.my_track.extremes = \
+                    self.controller.shared_data.obj_track.extremes = \
                         session_meta.extremes
 
                     # Insert plot
-                    plots.plot_track(self.controller.shared_data.my_track,
+                    plots.plot_track(self.controller.shared_data.obj_track,
                                      self.controller.shared_data.ax_track)
-                    plots.plot_elevation(self.controller.shared_data.my_track,
+                    plots.plot_elevation(self.controller.shared_data.obj_track,
                                          self.controller.shared_data.ax_ele)
                     plots.plot_track_info(
-                        self.controller.shared_data.my_track,
+                        self.controller.shared_data.obj_track,
                         self.controller.shared_data.ax_track_info)
                     self.controller.shared_data.canvas.draw()
 
     def new_session(self):
         proceed = True
 
-        if self.controller.shared_data.my_track.size > 0:
+        if self.controller.shared_data.obj_track.size > 0:
             message = \
                 'Current session will be deleted. Do you wish to proceed?'
             proceed = messagebox.askokcancel(title='New session',
@@ -115,7 +115,7 @@ class FileMenu(tk.Menu):
 
         if proceed:
             # Restart session
-            self.controller.shared_data.my_track = track.Track()
+            self.controller.shared_data.obj_track = track.Track()
 
             # Plot
             plots.plot_world(self.controller.shared_data.ax_track)
@@ -124,15 +124,15 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.canvas.draw()
 
     def save_session(self):
-        session = self.controller.shared_data.my_track.track
+        session = self.controller.shared_data.obj_track.df_track
 
         metadata = types.SimpleNamespace()
-        metadata.size = self.controller.shared_data.my_track.size
-        metadata.extremes = self.controller.shared_data.my_track.extremes
+        metadata.size = self.controller.shared_data.obj_track.size
+        metadata.extremes = self.controller.shared_data.obj_track.extremes
         metadata.total_distance = \
-            self.controller.shared_data.my_track.total_distance
+            self.controller.shared_data.obj_track.total_distance
         metadata.loaded_files = \
-            self.controller.shared_data.my_track.loaded_files
+            self.controller.shared_data.obj_track.loaded_files
 
         session_filename = tk.filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
@@ -152,4 +152,4 @@ class FileMenu(tk.Menu):
             filetypes=[('Gpx file', '*.gpx')])
 
         if gpx_filename:  # user may close filedialog
-            self.controller.shared_data.my_track.save_gpx(gpx_filename)
+            self.controller.shared_data.obj_track.save_gpx(gpx_filename)

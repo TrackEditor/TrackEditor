@@ -13,7 +13,7 @@ class SplitSegment:
                                                             # segment
         self.max_index = df_segment.index[-1]  # last index in dataframe
         self.ax = [shared_data.ax_track, shared_data.ax_ele]
-        self.track = shared_data.my_track
+        self.track = shared_data.obj_track
         self.canvas = shared_data.canvas
 
         # Prepare initial plot for splitting option
@@ -42,7 +42,7 @@ class SplitSegment:
         ax_ele = self.shared_data.ax_ele
 
         # Create plot and establish interaction
-        plots.plot_elevation(self.shared_data.my_track,
+        plots.plot_elevation(self.shared_data.obj_track,
                              self.shared_data.ax_ele,
                              selected_segment_idx=self.segment_idx)
 
@@ -176,13 +176,13 @@ class SplitSegment:
             #print(self.shared_data.my_track.track)
 
             # Update plot
-            plots.plot_track(self.shared_data.my_track,
+            plots.plot_track(self.shared_data.obj_track,
                              self.shared_data.ax_track)
             plots.plot_track_info(
-                self.shared_data.my_track,
+                self.shared_data.obj_track,
                 self.shared_data.ax_track_info)
 
-            plots.plot_elevation(self.shared_data.my_track,
+            plots.plot_elevation(self.shared_data.obj_track,
                                  self.shared_data.ax_ele)
 
         self.shared_data.btn_done.on_clicked(divide_segment)

@@ -54,18 +54,18 @@ class EditMenu(tk.Menu):
         Reverse order of data for the selected segment.
         """
         selected_segment = \
-            self.controller.shared_data.my_track.selected_segment_idx
+            self.controller.shared_data.obj_track.selected_segment_idx
 
         if len(selected_segment) == 1:
             segment_idx = selected_segment[0]
-            self.controller.shared_data.my_track.reverse_segment(segment_idx)
+            self.controller.shared_data.obj_track.reverse_segment(segment_idx)
 
             # Update plot
             plots.plot_track_info(
-                self.controller.shared_data.my_track,
+                self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track_info)
 
-            plots.plot_elevation(self.controller.shared_data.my_track,
+            plots.plot_elevation(self.controller.shared_data.obj_track,
                                  self.controller.shared_data.ax_ele)
 
             self.controller.shared_data.canvas.draw()
@@ -83,7 +83,7 @@ class EditMenu(tk.Menu):
         Open a new window to introduce time and speed, then a timestamp is
         added to the whole track
         """
-        if self.controller.shared_data.my_track.size == 0:
+        if self.controller.shared_data.obj_track.size == 0:
             message = 'There is no loaded track to insert timestamp'
             messagebox.showwarning(title='Insert Time Assistant',
                                    message=message)
@@ -159,7 +159,7 @@ class EditMenu(tk.Menu):
                     raise ValueError('Speed must be a positive number.')
 
                 # Insert timestamp
-                self.controller.shared_data.my_track.\
+                self.controller.shared_data.obj_track.\
                     insert_timestamp(self.timestamp, self.speed)
                 top.destroy()
 
@@ -190,18 +190,18 @@ class EditMenu(tk.Menu):
         Apply the elevation correction on the selected segment.
         """
         selected_segment = \
-            self.controller.shared_data.my_track.selected_segment_idx
+            self.controller.shared_data.obj_track.selected_segment_idx
 
         if len(selected_segment) == 1:
             segment_idx = selected_segment[0]
-            self.controller.shared_data.my_track.fix_elevation(segment_idx)
+            self.controller.shared_data.obj_track.fix_elevation(segment_idx)
 
             # Update plot
             plots.plot_track_info(
-                self.controller.shared_data.my_track,
+                self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track_info)
 
-            plots.plot_elevation(self.controller.shared_data.my_track,
+            plots.plot_elevation(self.controller.shared_data.obj_track,
                                  self.controller.shared_data.ax_ele)
 
             self.controller.shared_data.canvas.draw()
@@ -215,7 +215,7 @@ class EditMenu(tk.Menu):
 
     def remove_segment(self):
         selected_segment = \
-            self.controller.shared_data.my_track.selected_segment_idx
+            self.controller.shared_data.obj_track.selected_segment_idx
 
         if len(selected_segment) == 1:
             segment_idx = selected_segment[0]
@@ -225,18 +225,18 @@ class EditMenu(tk.Menu):
                                              message=msg)
 
             if proceed:
-                size = self.controller.shared_data.my_track.remove_segment(
+                size = self.controller.shared_data.obj_track.remove_segment(
                     segment_idx)
 
                 # Update plot
                 if size > 0:
                     plots.plot_track_info(
-                        self.controller.shared_data.my_track,
+                        self.controller.shared_data.obj_track,
                         self.controller.shared_data.ax_track_info)
 
-                    plots.plot_elevation(self.controller.shared_data.my_track,
+                    plots.plot_elevation(self.controller.shared_data.obj_track,
                                          self.controller.shared_data.ax_ele)
-                    plots.plot_track(self.controller.shared_data.my_track,
+                    plots.plot_track(self.controller.shared_data.obj_track,
                                      self.controller.shared_data.ax_track)
                 else:
                     plots.plot_world(self.controller.shared_data.ax_track)
@@ -258,7 +258,7 @@ class EditMenu(tk.Menu):
     def split_segment(self):
         # Selection management
         selected_segment = \
-            self.controller.shared_data.my_track.selected_segment_idx
+            self.controller.shared_data.obj_track.selected_segment_idx
 
         if len(selected_segment) > 1:
             messagebox.showerror('Warning',
@@ -271,7 +271,7 @@ class EditMenu(tk.Menu):
         else:
             segment_idx = selected_segment[0]
             df_segment = \
-                self.controller.shared_data.my_track.get_segment(segment_idx)
+                self.controller.shared_data.obj_track.get_segment(segment_idx)
 
         # Create plot
         interaction = SplitSegmentCallback(
@@ -284,7 +284,7 @@ class EditMenu(tk.Menu):
         """
         change order
         """
-        if self.controller.shared_data.my_track.size == 0:
+        if self.controller.shared_data.obj_track.size == 0:
             message = 'There is no loaded track to change order'
             messagebox.showwarning(title='Insert Time Assistant',
                                    message=message)
@@ -302,7 +302,7 @@ class EditMenu(tk.Menu):
         spn_seg = collections.defaultdict()
 
         available_segments = \
-            self.controller.shared_data.my_track.track.segment.unique()
+            self.controller.shared_data.obj_track.df_track.segment.unique()
 
         for i, entry in enumerate(available_segments):
             # This allow resize the window
@@ -359,16 +359,16 @@ class EditMenu(tk.Menu):
                 messagebox.showerror('Warning',
                                      'Invalid order. Bad max/min index.')
             else:
-                self.controller.shared_data.my_track.change_order(new_order)
+                self.controller.shared_data.obj_track.change_order(new_order)
                 top.destroy()
 
                 # Update plots
-                plots.plot_elevation(self.controller.shared_data.my_track,
+                plots.plot_elevation(self.controller.shared_data.obj_track,
                                      self.controller.shared_data.ax_ele)
-                plots.plot_track(self.controller.shared_data.my_track,
+                plots.plot_track(self.controller.shared_data.obj_track,
                                  self.controller.shared_data.ax_track)
                 plots.plot_track_info(
-                    self.controller.shared_data.my_track,
+                    self.controller.shared_data.obj_track,
                     self.controller.shared_data.ax_track_info)
                 self.controller.shared_data.canvas.draw()
 
