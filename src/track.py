@@ -241,3 +241,14 @@ class Track:
         self.track = self.track.drop(['index'], axis=1)
 
         return True
+
+    def change_order(self, new_order: dict):
+        self.track.segment = self.track.apply(
+            lambda row: new_order[row.segment],
+            axis=1)
+
+        self.track['index1'] = self.track.index
+        self.track = self.track.sort_values(by=['segment', 'index1'])
+        self.track = self.track.drop(labels=['index1'], axis=1)
+        self.track = self.track.reset_index(drop=True)
+        self._update_summary()  # for full track

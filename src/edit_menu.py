@@ -41,6 +41,8 @@ class EditMenu(tk.Menu):
                                   command=self.split_segment)
         self.editmenu.add_command(label='Remove segment',
                                   command=self.remove_segment)
+        self.editmenu.add_command(label='Change segment order',
+                                  command=self.change_order)
         parent.add_cascade(label='Edit', menu=self.editmenu)
 
         # Time variables initialization
@@ -277,3 +279,102 @@ class EditMenu(tk.Menu):
             df_segment)
 
         interaction.connect()
+
+    def change_order(self):
+        """
+        change order
+        """
+        if self.controller.shared_data.my_track.size == 0:
+            message = 'There is no loaded track to change order'
+            messagebox.showwarning(title='Insert Time Assistant',
+                                   message=message)
+            return
+
+        self.timestamp = dt.datetime(2000, 1, 1, 0, 0, 0)
+        self.speed = 0
+
+        top = tk.Toplevel()
+        top.title('Change Segment Order Assistant')
+
+        # Insert data frame
+        frm_form = tk.Frame(top, relief=tk.FLAT, borderwidth=3)
+        frm_form.pack()  # insert frame to use grid on it
+        spn_seg = collections.defaultdict()
+
+        available_segments = \
+            self.controller.shared_data.my_track.track.segment.unique()
+
+        for i, entry in enumerate(available_segments):
+            # This allow resize the window
+            top.columnconfigure(i, weight=1, minsize=75)
+            top.rowconfigure(i, weight=1, minsize=50)
+
+            # Create widgets
+            var = tk.StringVar(top)
+            var.set(i+1)
+            color = plots.rgb2hexcolor(plots.color_rgb(plots.COLOR_LIST[i]))
+
+            spn_seg[entry] = tk.Spinbox(from_=1,
+                                        to=99,
+                                        master=frm_form,
+                                        width=8,
+                                        textvariable=var,
+                                        justify=tk.RIGHT,
+                                        relief=tk.FLAT)
+
+            lbl_label = tk.Label(master=frm_form, text=f'{entry}', anchor='w',
+                                 width=6,
+                                 height=1,
+                                 relief=tk.FLAT,
+                                 justify=tk.CENTER,
+                                 bg=color)
+
+            # Grid
+            lbl_label.grid(row=i, column=0)  # grid attached to frame
+            spn_seg[entry].grid(row=i, column=1)
+
+        # Button frame
+        frm_button = tk.Frame(top)
+        frm_button.pack(fill=tk.X, padx=5,
+                        pady=5)  # fill in horizontal direction
+
+        def clear_box():
+            for i, s in enumerate(spn_seg):
+                spn_seg[s].delete(0, 8)
+                spn_seg[s].insert(0, i+1)
+            spn_seg.insert(0, 0)
+
+        def insert_order():
+
+            # Check valid order
+            new_order = {}
+            for _entry in available_segments:
+                new_order[_entry] = int(spn_seg[_entry].get())
+
+            if len(set(new_order)) != len(available_segments):
+                messagebox.showerror('Warning',
+                                     'Invalid order. Repeated index.')
+            elif max(new_order, key=int) != max(available_segments) or \
+                    min(new_order, key=int) != min(available_segments):
+                messagebox.showerror('Warning',
+                                     'Invalid order. Bad max/min index.')
+            else:
+                self.controller.shared_data.my_track.change_order(new_order)
+                top.destroy()
+
+                # Update plots
+                plots.plot_elevation(self.controller.shared_data.my_track,
+                                     self.controller.shared_data.ax_ele)
+                plots.plot_track(self.controller.shared_data.my_track,
+                                 self.controller.shared_data.ax_track)
+                plots.plot_track_info(
+                    self.controller.shared_data.my_track,
+                    self.controller.shared_data.ax_track_info)
+                self.controller.shared_data.canvas.draw()
+
+        btn_clear = tk.Button(master=frm_button, text='Clear',
+                              command=clear_box)
+        btn_submit = tk.Button(master=frm_button, text='Submit',
+                               command=insert_order)
+        btn_clear.pack(side=tk.RIGHT, padx=10)
+        btn_submit.pack(side=tk.RIGHT, padx=10)

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import geopy.distance
 from matplotlib.font_manager import FontProperties
+import matplotlib.colors as mcolors
 
 from src import constants as c, iosm, track
 import sys
@@ -20,6 +21,25 @@ logger = logging.getLogger(__name__)
 COLOR_LIST = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
               'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'brown',
               'gold', 'turquoise', 'teal']
+
+
+def color_rgb(color_name: str) -> Tuple[float, float, float]:
+    color_collection = mcolors.CSS4_COLORS
+
+    by_hsv = sorted((tuple(mcolors.to_rgb(color)), name)
+                    for name, color in color_collection.items())
+
+    for color in by_hsv:
+        if color_name == color[1]:
+            return color[0]
+
+    return 0.0, 0.0, 0.0
+
+
+def rgb2hexcolor(rgb_color: Tuple[int, int, int]) -> str:
+    return '#%02x%02x%02x' % ( int(255*rgb_color[0]),
+                               int(255*rgb_color[1]),
+                               int(255*rgb_color[2]))
 
 
 def auto_zoom(lat_min: float, lon_min: float,
