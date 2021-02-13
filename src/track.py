@@ -9,8 +9,16 @@ from src import constants as c
 
 class Track:
     def __init__(self):
+        # Define dataframe and types
         self.columns = ['lat', 'lon', 'ele', 'segment', 'time']
         self.df_track = pd.DataFrame(columns=self.columns)
+        self.df_track['lat'] = self.df_track['lat'].astype('float64')
+        self.df_track['lon'] = self.df_track['lon'].astype('float64')
+        self.df_track['ele'] = self.df_track['ele'].astype('float64')
+        self.df_track['segment'] = self.df_track['segment'].astype('int64')
+        self.df_track['time'] = self.df_track['time'].astype('datetime64[ns]')
+
+        # General purpose properties
         self.size = 0  # number of gpx in track
         self.last_index = 0
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
