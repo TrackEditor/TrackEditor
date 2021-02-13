@@ -452,6 +452,8 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
 
 
 def plot_world(ax: plt.Figure.gca):
+    iosm.download_tiles_by_num(0, 0, 1, 1, max_zoom=1)
+
     ax.clear()
     world_img = create_map_img((0, 0, 1, 1), 1)
     ax.imshow(world_img, zorder=0, aspect='equal')  # aspect is equal to ensure
