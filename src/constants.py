@@ -1,4 +1,5 @@
 import logging
+import os
 
 # gpx file parser options
 maximum_file_size = 10e+6
@@ -18,8 +19,12 @@ steep_k_moving_average = 20  # step for moving average if needed
 # log options
 log_level = logging.DEBUG
 
+# location
+src_path = os.path.dirname(os.path.realpath(__file__))
+prj_path = os.path.dirname(src_path)
+
 # OSM request options
-version = "v0.8"
+version = "v0.9"
 email = "alguerre@outlook.com"
 tool = "TrackEditor"
 

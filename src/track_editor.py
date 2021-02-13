@@ -94,14 +94,15 @@ class MainApplication(tk.Frame):
 
 if __name__ == '__main__':
     # Define logger
-    if not os.path.isdir('log'):
-        os.mkdir('../log')
+    if not os.path.isdir(f'{c.prj_path}/log'):
+        os.mkdir(f'{c.prj_path}/log')
 
     now = dt.datetime.now()  # current date and time
     date_time = now.strftime('%Y%m%d-%H%M%S')
 
-    logging.basicConfig(level=c.log_level,
-                        filename=f'log/{date_time}_track_editor.log')
+    logging.basicConfig(
+        level=c.log_level,
+        filename=f'{c.prj_path}/log/{date_time}_track_editor.log')
     logger = logging.getLogger()
 
     # Initialize tk

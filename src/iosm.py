@@ -54,7 +54,7 @@ def _download_url(zoom: int, xtile: int, ytile: int) -> bool:
     :return: True if tile is correct
     """
     # Define path
-    dir_path = f'tiles/{zoom}/{xtile}/'
+    dir_path = f'{c.prj_path}/tiles/{zoom}/{xtile}/'
     tile_path = f'{dir_path}/{ytile}.png'
     if not os.path.exists(dir_path):
         LOGGER.debug(f'Creating directory: {dir_path}')
