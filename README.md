@@ -33,6 +33,7 @@ sudo docker run \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix  \
     -v /home/$USER/Desktop:/home/Desktop \
+    -v /var/log:/home/TrackEditor/log \
     track_editor_im:1.0
 ```
 
