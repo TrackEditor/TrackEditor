@@ -158,6 +158,12 @@ class FileMenu(tk.Menu):
             store.close()
 
     def save_gpx(self):
+        if self.controller.shared_data.obj_track.df_track.time.isnull().any():
+            msg = 'Timestamp is needed in order to generate your gpx.\n' + \
+                  'Please, use Edit -> Insert Time'
+            messagebox.showerror('Error', msg)
+            return
+
         gpx_filename = tk.filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
             title='Save track as',
@@ -165,3 +171,5 @@ class FileMenu(tk.Menu):
 
         if gpx_filename:  # user may close filedialog
             self.controller.shared_data.obj_track.save_gpx(gpx_filename)
+
+        messagebox.showinfo('Info', 'Your file is ready :)')
