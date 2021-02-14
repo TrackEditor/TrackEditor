@@ -179,10 +179,10 @@ class Track:
                                              df_segment['ele'], -1)
 
         # Fill steep zones
-        fixed_elevation = df_no_steep['ele_to_fix'].to_numpy()
-        original_elevation = df_no_steep['ele'].to_numpy()
-        fixed_steep_zone = df_no_steep['steep_zone']
-        before_x = before_y = after_x = after_y = None  # initialization
+        fixed_elevation = df_no_steep['ele_to_fix'].copy().to_numpy()
+        original_elevation = df_no_steep['ele'].copy().to_numpy()
+        fixed_steep_zone = df_no_steep['steep_zone'].copy()
+        before_x = before_y = after_x = after_y = None
 
         for i in range(1, len(fixed_elevation)):
             if not df_no_steep['steep_zone'].loc[i - 1] and \
@@ -199,11 +199,12 @@ class Track:
                 coef = np.polyfit(np.concatenate((before_x, after_x)),
                                   np.concatenate((before_y, after_y)),
                                   3)
-                for j in range(before_x[-1], after_x[0]):
-                    fixed_elevation[j] = np.polyval(coef, j)
-                    fixed_steep_zone[j] = False
+                for i in range(before_x[-1], after_x[0]):
+                    fixed_elevation[i] = np.polyval(coef, i)
+                    fixed_steep_zone[i] = False
 
-        if not after_y and not after_x and before_x and before_y:
+        # Apply moving average on tail
+        if after_y is None and after_x is None:
             n = c.steep_k_moving_average
             fixed_elevation[before_x[-1]:] = np.concatenate((
                 original_elevation[before_x[-1]:before_x[-1] + n - 1],
