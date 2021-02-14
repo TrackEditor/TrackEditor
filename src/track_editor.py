@@ -8,12 +8,12 @@ import matplotlib.backends.backend_tkagg as backend_tkagg
 import matplotlib.widgets as widgets
 import types
 
-import src.constants as c
-import src.plots as plots
-import src.track as track
-from src.file_menu import FileMenu
-from src.edit_menu import EditMenu
-from src.utils import quit_app
+import constants as c
+import plots
+import track
+from file_menu import FileMenu
+from edit_menu import EditMenu
+from utils import quit_app
 
 
 class MainApplication(tk.Frame):

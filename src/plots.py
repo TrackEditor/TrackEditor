@@ -8,9 +8,9 @@ import geopy.distance
 from matplotlib.font_manager import FontProperties
 import matplotlib.colors as mcolors
 
-from src import constants as c, iosm, track
-import sys
-# import utils
+import constants as c
+import iosm
+import track
 
 
 logger = logging.getLogger(__name__)

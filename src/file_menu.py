@@ -5,9 +5,9 @@ import tkinter.messagebox as messagebox
 import pandas as pd
 import types
 
-import src.plots as plots
-import src.track as track
-from src.utils import quit_app
+import plots
+import track
+from utils import quit_app
 
 
 class FileMenu(tk.Menu):

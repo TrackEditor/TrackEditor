@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import numpy as np
 
-from src import constants as c
+import constants as c
 
 
 class LoadGpxError(Exception):

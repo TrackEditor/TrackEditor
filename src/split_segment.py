@@ -1,7 +1,7 @@
 from bisect import bisect
 import pandas as pd
 
-import src.plots as plots
+import plots
 
 
 class SplitSegment:

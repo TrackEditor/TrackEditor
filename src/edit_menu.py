@@ -2,16 +2,9 @@ import datetime as dt
 import tkinter as tk
 import tkinter.messagebox as messagebox
 import collections
-import math
-from bisect import bisect
-import matplotlib.pyplot as plt
-import pandas as pd
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.widgets as widgets
 
-import src.utils as utils
-import src.plots as plots
-from src.split_segment import SplitSegment as SplitSegmentCallback
+import plots
+from split_segment import SplitSegment as SplitSegmentCallback
 
 
 INDEX = 0

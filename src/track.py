@@ -3,8 +3,10 @@ import numpy as np
 import datetime as dt
 import geopy.distance
 import gpxpy.gpx
-from src import utils, gpx
-from src import constants as c
+
+import utils
+import gpx
+import constants as c
 
 
 class Track:
