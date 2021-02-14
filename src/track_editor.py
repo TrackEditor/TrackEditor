@@ -49,17 +49,6 @@ class MainApplication(tk.Frame):
         EditMenu(self.menubar, self)
         self.parent.config(menu=self.menubar)
 
-        #  Insert navigation toolbar for plots
-        toolbar = backend_tkagg.NavigationToolbar2Tk(self.shared_data.canvas,
-                                                     root)
-        toolbar.children['!button3'].pack_forget()  # forward to next view
-        toolbar.children['!button5'].pack_forget()  # zoom to rectangle
-        toolbar.children['!button6'].pack_forget()  # configure subplots
-        toolbar.children['!button7'].pack_forget()  # save figure
-        toolbar.update()
-        self.shared_data.canvas.get_tk_widget().pack(
-            side=tk.TOP, fill=tk.BOTH, expand=1)
-
     def init_ui(self):
         # Prepare plot grid distribution
         gspec = gridspec.GridSpec(4, 8)
