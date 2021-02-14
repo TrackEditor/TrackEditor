@@ -9,7 +9,7 @@ The single goal of this application is to load,
 visualize and edit your GPX files to create your custom track.
 
 There are amazing tools to create tracks from scratch: komoot, strava... 
-But any GPX aditor which matches my neecesities at 100%.
+But any GPX editor which matches my necessities at 100%.
 
 ## Repository organization
 - **src**: source code
@@ -36,6 +36,8 @@ sudo docker run \
     -v /var/log:/home/TrackEditor/log \
     track_editor_im:1.0
 ```
+
+**Note:** launching the script issue_14_16.sh before launching in Linux is needed until issues #14 and #16 are solved.
 
 ## Usage
 Launch is automatized by using docker. 
