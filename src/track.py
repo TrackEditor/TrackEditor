@@ -134,6 +134,12 @@ class Track:
         gpx_track = gpxpy.gpx.GPXTrack()
         ob_gpxpy.tracks.append(gpx_track)
 
+        # Insert default metadata
+        ob_gpxpy.creator = c.device
+        ob_gpxpy.author_email = c.author_email
+        ob_gpxpy.description = c.description
+        ob_gpxpy.author_name = c.author_name
+
         # Create segments in track
         for seg_id in self.df_track.segment.unique():
             gpx_segment = gpxpy.gpx.GPXTrackSegment()

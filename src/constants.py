@@ -28,3 +28,8 @@ version = "v0.9"
 email = "alguerre@outlook.com"
 tool = "TrackEditor"
 
+# gpx metadata
+device = "Garmin Edge 830"
+author_email = email
+author_name = "Alonso Guarrior"
+description = f"This activity has been updated with {tool} {version}"
