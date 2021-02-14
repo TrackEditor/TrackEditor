@@ -37,7 +37,6 @@ sudo docker run \
     track_editor_im:1.0
 ```
 
-**Note:** launching the script issue_14_16.sh before launching in Linux is needed until issues #14 and #16 are solved.
 
 ## Usage
 Launch is automatized by using docker. 
