@@ -464,6 +464,7 @@ def plot_world(ax: plt.Figure.gca):
 
 def plot_no_elevation(ax: plt.Figure.gca):
     with plt.style.context('ggplot'):
+        ax.cla()
         ax.plot()
         ax.set_xlim([0, 1])
         ax.set_ylim([0, 1])

@@ -38,7 +38,7 @@ class MainApplication(tk.Frame):
         self.shared_data.canvas = backend_tkagg.FigureCanvasTkAgg(self.fig,
                                                                   self)
         self.shared_data.obj_track = track.Track()
-        self.shared_data.cid = None
+        self.shared_data.cid = []
 
         # Initialize user interface
         self.init_ui()  # Insert default image

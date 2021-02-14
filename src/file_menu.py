@@ -55,12 +55,13 @@ class FileMenu(tk.Menu):
             track_info_table = plots.plot_track_info(
                 self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track_info)
-            self.controller.shared_data.cid = plots.segment_selection(
+            cid = plots.segment_selection(
                 self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track,
                 self.controller.shared_data.ax_ele,
                 self.controller.shared_data.fig_track,
                 track_info_table)
+            self.controller.shared_data.cid.append(cid)
             self.controller.shared_data.canvas.draw()
 
     def load_session(self):
@@ -114,6 +115,9 @@ class FileMenu(tk.Menu):
                                              message=message)
 
         if proceed:
+            # Delete former objects
+            del self.controller.shared_data.obj_track
+
             # Restart session
             self.controller.shared_data.obj_track = track.Track()
 
@@ -121,6 +125,14 @@ class FileMenu(tk.Menu):
             plots.plot_world(self.controller.shared_data.ax_track)
             plots.plot_no_elevation(self.controller.shared_data.ax_ele)
             plots.plot_no_info(self.controller.shared_data.ax_track_info)
+
+            # Stop interactivity
+            for cid in self.controller.shared_data.cid:
+                self.controller.shared_data.fig_track.canvas.mpl_disconnect(
+                    cid)
+            self.controller.shared_data.cid.clear()
+
+            # Update plots
             self.controller.shared_data.canvas.draw()
 
     def save_session(self):
