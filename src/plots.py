@@ -315,6 +315,15 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
         ax.plot(reduced_segment.lon, reduced_segment.lat, color=cc,
                 linewidth=1, marker='o', markersize=2, zorder=10)
 
+    # Join tracks
+    for i in range(len(segments_id)-1):
+        # Line from last point in current segment to last in next segment
+        curr_segment = ob_track.get_segment(segments_id[i])
+        next_segment = ob_track.get_segment(segments_id[i+1])
+        ax.plot([curr_segment.iloc[-1].lon, next_segment.iloc[0].lon],
+                [curr_segment.iloc[-1].lat, next_segment.iloc[0].lat],
+                color='red', linewidth=1, zorder=9)
+
     # Beauty salon
     ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
     ax.tick_params(axis='y', left=False, right=False, labelleft=False)
@@ -426,6 +435,19 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
             segment = ob_track.get_segment(seg_id)
             ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
             ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
+
+        for i in range(len(segments_id)-1):
+            curr_segment = ob_track.get_segment(segments_id[i])
+            next_segment = ob_track.get_segment(segments_id[i+1])
+            ax.plot([curr_segment.distance.iloc[-1],
+                     next_segment.distance.iloc[0]],
+                    [curr_segment.ele.iloc[-1], next_segment.ele.iloc[0]],
+                    linewidth=2, color='red', linestyle='-.')
+            ax.fill_between([curr_segment.distance.iloc[-1],
+                             next_segment.distance.iloc[0]],
+                            [curr_segment.ele.iloc[-1],
+                             next_segment.ele.iloc[0]],
+                            alpha=0.5, color='red')
     else:
         segment = ob_track.get_segment(selected_segment_idx)
         cc = COLOR_LIST[selected_segment_idx - 1]
