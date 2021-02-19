@@ -238,7 +238,7 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
     # Build segments info table
     segments_id = ob_track.df_track.segment.unique()
 
-    for cc, seg_id in zip(COLOR_LIST, segments_id):
+    for seg_id in segments_id:
         distance_lbl = get_distance_label(ob_track, segment_id=seg_id)
         gained_elevation_lbl = get_elevation_label(ob_track, 'ele_pos_cum',
                                                    segment_id=seg_id)
@@ -250,7 +250,7 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
                           gained_elevation_lbl,
                           lost_elevation_lbl])
 
-        track_color.append(cc)
+        track_color.append(COLOR_LIST[seg_id-1])
 
     # Get info for the full track
     distance_lbl = get_distance_label(ob_track, -1, total=True)
@@ -309,7 +309,8 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
 
     # Plot track
     segments_id = ob_track.df_track.segment.unique()
-    for cc, seg_id in zip(COLOR_LIST, segments_id):
+    for seg_id in segments_id:
+        cc = COLOR_LIST[seg_id - 1]  # color
         segment = ob_track.get_segment(seg_id)
         reduced_segment = point_reduction(segment)
         ax.plot(reduced_segment.lon, reduced_segment.lat, color=cc,
@@ -431,7 +432,8 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
     segments_id = ob_track.df_track.segment.unique()
 
     if selected_segment_idx == 0:
-        for cc, seg_id in zip(COLOR_LIST, segments_id):
+        for seg_id in segments_id:
+            cc = COLOR_LIST[seg_id-1]  # color
             segment = ob_track.get_segment(seg_id)
             ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
             ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)

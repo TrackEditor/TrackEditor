@@ -305,7 +305,8 @@ class EditMenu(tk.Menu):
             # Create widgets
             var = tk.StringVar(top)
             var.set(i+1)
-            color = plots.rgb2hexcolor(plots.color_rgb(plots.COLOR_LIST[i]))
+            color = plots.rgb2hexcolor(
+                plots.color_rgb(plots.COLOR_LIST[entry-1]))
 
             spn_seg[entry] = tk.Spinbox(from_=1,
                                         to=99,
