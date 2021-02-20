@@ -240,19 +240,18 @@ class Track:
 
         return self.size
 
-    def divide_segment(self, segment_index: int, div_index: int):
+    def divide_segment(self, div_index: int):
+        """
+        :param div_index: refers to the index of the full df_track, not segment
+        """
         self.df_track['index'] = self.df_track.index
+        segment_index = self.df_track.index[div_index]
 
         def segment_index_modifier(row):
-            if row['segment'] < segment_index:
+            if row['index'] < div_index:
                 return row['segment']
-            elif row['segment'] > segment_index:
-                return row['segment'] + 1
             else:
-                if row['index'] < div_index:
-                    return row['segment']
-                else:
-                    return row['segment'] + 1
+                return row['segment'] + 1
 
         self.df_track['segment'] = \
             self.df_track.apply(lambda row: segment_index_modifier(row),

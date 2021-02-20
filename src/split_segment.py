@@ -9,8 +9,7 @@ class SplitSegment:
         # Input data properties
         self.shared_data = shared_data
         self.df_segment = df_segment
-        self.segment_idx = self.df_segment.segment.iloc[0]  # idx selected
-                                                            # segment
+        self.segment_idx = self.df_segment.segment.iloc[0]  # idx selected seg
         self.max_index = df_segment.index[-1]  # last index in dataframe
         self.ax = [shared_data.ax_track, shared_data.ax_ele]
         self.track = shared_data.obj_track
@@ -111,8 +110,6 @@ class SplitSegment:
         self.index = bisect(distance.reset_index(drop=True), x0 + dx) + \
                      first_index
 
-        # DEBUG print
-        # print(f'x0={x0}, dx={dx}, index={self.index}, max_index={self.max_index}')
         if self.index < 0:
             self.index = 0
         elif self.index > self.max_index:
@@ -165,15 +162,8 @@ class SplitSegment:
         self.press = None
 
         def divide_segment(_event):
-            # DEBUG
-            #print()
-            #print(f'segment.iloc[0]={self.df_segment.segment.iloc[0]}')
-            #print(f'index={self.index}')
-            self.track.divide_segment(
-                self.df_segment.segment.iloc[0],
-                self.index)
+            self.track.divide_segment(self.index)
             self.disconnect()
-            #print(self.shared_data.my_track.track)
 
             # Update plot
             plots.plot_track(self.shared_data.obj_track,
