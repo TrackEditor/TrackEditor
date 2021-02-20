@@ -7,6 +7,7 @@ import matplotlib.image as mpimg
 import geopy.distance
 from matplotlib.font_manager import FontProperties
 import matplotlib.colors as mcolors
+import matplotlib.ticker as mticker
 
 import constants as c
 import iosm
@@ -466,6 +467,10 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
 
     if len(dist_label) != len(set(dist_label)):
         dist_label = [f'{item:.1f} km' for item in ax.get_xticks()]
+
+    ax.xaxis.set_major_locator(mticker.FixedLocator(ax.get_xticks()))
+    ax.yaxis.set_major_locator(mticker.FixedLocator(ax.get_yticks()))
+    # locators are need to avoid warning
 
     ax.set_xticklabels(dist_label)
     ax.set_yticklabels(ele_label)
