@@ -1,9 +1,9 @@
 import pytest
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 
 import track
+from constants import prj_path
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -17,7 +17,8 @@ def test_reverse_segment():
     """
     # Load data
     obj_track = track.Track()
-    obj_track.add_gpx('test_cases/Innacessible_Island_part1.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part1.gpx')
 
     # Overal initial information
     initial_shape = obj_track.df_track.shape
@@ -50,7 +51,8 @@ def test_divide_segment():
 
     # Load data
     obj_track = track.Track()
-    obj_track.add_gpx('test_cases/Innacessible_Island_Full.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
 
     # Overall initial information
     initial_total_distance = obj_track.df_track.distance.iloc[-1]
@@ -76,7 +78,8 @@ def test_multi_divide_segment():
 
     # Load data
     obj_track = track.Track()
-    obj_track.add_gpx('test_cases/Innacessible_Island_Full.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
 
     # Overal initial information
     initial_total_distance = obj_track.df_track.distance.iloc[-1]
@@ -99,33 +102,51 @@ def test_multi_divide_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
-@pytest.mark.skip(reason="To be reviewed")
 def test_change_order():
-
-    check_points = {}
+    """
+    Check that the order has been properly changed by looking at first and
+    last row elements of the segment.
+    """
 
     # Load data
     obj_track = track.Track()
 
-    check_points[0] = 1
-    obj_track.add_gpx('test_cases/Innacessible_Island_part1.gpx')
-    check_points[obj_track.df_track.index[-1]] = 1
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part1.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part2.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part3.gpx')
 
-    check_points[obj_track.df_track.index[-1] + 1] = 2
-    obj_track.add_gpx('test_cases/Innacessible_Island_part2.gpx')
-    check_points[obj_track.df_track.index[-1]] = 2
-
-    check_points[obj_track.df_track.index[-1] + 1] = 3
-    obj_track.add_gpx('test_cases/Innacessible_Island_part3.gpx')
-    check_points[obj_track.df_track.index[-1]] = 3
+    # Get initial data
+    init_segment = {}
+    end_segment = {}
+    for i in range(3):
+        seg_idx = i+1
+        segment = obj_track.get_segment(seg_idx)
+        init_segment[seg_idx] = {'lat': segment.iloc[0].lat,
+                                 'lon': segment.iloc[0].lon,
+                                 'ele': segment.iloc[0].ele}
+        end_segment[seg_idx] = {'lat': segment.iloc[-1].lat,
+                                'lon': segment.iloc[-1].lon,
+                                'ele': segment.iloc[-1].ele}
 
     # Apply function
     new_order = {1: 3, 2: 1, 3: 2}
     obj_track.change_order(new_order)
 
-    # Specific checks
-    for cp in check_points:
-        assert obj_track.df_track.segment.iloc[cp] == new_order[check_points[cp]]
+    # Checks
+    for i in new_order:
+        new_i = new_order[i]
+        old_i = i
+        segment = obj_track.get_segment(new_i)  # after the re-ordering
+
+        assert init_segment[old_i]['lat'] == pytest.approx(segment.iloc[0].lat)
+        assert init_segment[old_i]['lon'] == pytest.approx(segment.iloc[0].lon)
+        assert init_segment[old_i]['ele'] == pytest.approx(segment.iloc[0].ele)
+        assert end_segment[old_i]['lat'] == pytest.approx(segment.iloc[-1].lat)
+        assert end_segment[old_i]['lon'] == pytest.approx(segment.iloc[-1].lon)
+        assert end_segment[old_i]['ele'] == pytest.approx(segment.iloc[-1].ele)
 
 
 def load_session(filename):
@@ -148,7 +169,7 @@ def test_fix_elevation():
     maximum peak are lower than at the beggining.
     """
     # Load data
-    obj_track = load_session('test_cases\kungsleden.h5')
+    obj_track = load_session(f'{prj_path}/test/test_cases/kungsleden.h5')
 
     # Get initial data
     initial_std = np.std(obj_track.df_track.ele)
@@ -162,3 +183,24 @@ def test_fix_elevation():
 
     assert initial_max_peak > final_max_peak
     assert initial_std > final_std
+
+
+def test_remove_segment():
+    """
+    Remove one segment and check that it is not available after the removal
+    """
+    # Load data
+    obj_track = track.Track()
+
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part1.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part2.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part3.gpx')
+
+    # Apply method
+    obj_track.remove_segment(2)
+
+    # Check
+    assert 2 not in obj_track.df_track.segment.unique()
