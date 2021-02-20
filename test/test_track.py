@@ -1,7 +1,7 @@
 import pytest
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 import track
 
@@ -10,9 +10,36 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
-@pytest.mark.skip(reason="To be reviewed")
 def test_reverse_segment():
-    pass
+    """
+    Verify that lat, lon and ele are properly inverted. Total distance is not
+    applicable since this operation can provoke a change.
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx('test_cases/Innacessible_Island_part1.gpx')
+
+    # Overal initial information
+    initial_shape = obj_track.df_track.shape
+
+    # Copy for comparison
+    lat_comp = obj_track.df_track.lat.copy().to_numpy().astype('float32')
+    lon_comp = obj_track.df_track.lon.copy().to_numpy().astype('float32')
+    ele_comp = obj_track.df_track.ele.copy().to_numpy().astype('float32')
+
+    # Apply method
+    obj_track.reverse_segment(1)
+
+    # Specific checks
+    assert np.all(obj_track.df_track.lat.to_numpy() ==
+                  pytest.approx(lat_comp[::-1]))
+    assert np.all(obj_track.df_track.lon.to_numpy() ==
+                  pytest.approx(lon_comp[::-1]))
+    assert np.all(obj_track.df_track.ele.to_numpy() ==
+                  pytest.approx(ele_comp[::-1]))
+
+    # Non-regression checks, total_distance is not applicable
+    assert initial_shape == obj_track.df_track.shape
 
 
 def test_divide_segment():
@@ -43,8 +70,8 @@ def test_divide_segment():
 
 def test_multi_divide_segment():
     """
-    Split the segment in the index 100, before the segment id must be 1,
-    at and after it must be 2.
+    Split the segment at different indexes and check that the segment id
+    is properly updated
     """
 
     # Load data

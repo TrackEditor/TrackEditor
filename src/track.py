@@ -14,11 +14,7 @@ class Track:
         # Define dataframe and types
         self.columns = ['lat', 'lon', 'ele', 'segment', 'time']
         self.df_track = pd.DataFrame(columns=self.columns)
-        self.df_track['lat'] = self.df_track['lat'].astype('float64')
-        self.df_track['lon'] = self.df_track['lon'].astype('float64')
-        self.df_track['ele'] = self.df_track['ele'].astype('float64')
-        self.df_track['segment'] = self.df_track['segment'].astype('int64')
-        self.df_track['time'] = self.df_track['time'].astype('datetime64[ns]')
+        self._columns_type()
 
         # General purpose properties
         self.size = 0  # number of gpx in track
@@ -61,10 +57,17 @@ class Track:
 
     def reverse_segment(self, index: int):
         segment = self.get_segment(index)
-        rev_segment = pd.DataFrame(segment.values[::-1].astype('float32'),
+        time = self.df_track.time  # using time is problematic, is managed
+        # separately
+        segment = segment.drop(columns=['time'])
+
+        rev_segment = pd.DataFrame(segment.values[::-1],
                                    segment.index,
                                    segment.columns)
+        rev_segment['time'] = time[::-1]
         self.df_track.loc[self.df_track['segment'] == index] = rev_segment
+        self._columns_type()  # ensure proper type for columns
+
         self._update_summary()  # for full track
 
     def insert_timestamp(self, initial_time, speed):
@@ -73,6 +76,16 @@ class Track:
                 lambda row: initial_time +
                             dt.timedelta(hours=row['distance']/speed),
                 axis=1)
+
+    def _columns_type(self):
+        """
+        At some points it is needed to ensure the data type of each column
+        """
+        self.df_track['lat'] = self.df_track['lat'].astype('float32')
+        self.df_track['lon'] = self.df_track['lon'].astype('float32')
+        self.df_track['ele'] = self.df_track['ele'].astype('float32')
+        self.df_track['segment'] = self.df_track['segment'].astype('int32')
+        self.df_track['time'] = self.df_track['time'].astype('datetime64[ns]')
 
     def _insert_positive_elevation(self):
         self.df_track['ele diff'] = self.df_track['ele'].diff()

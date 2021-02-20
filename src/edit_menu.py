@@ -58,6 +58,9 @@ class EditMenu(tk.Menu):
                 self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track_info)
 
+            plots.plot_track(self.controller.shared_data.obj_track,
+                             self.controller.shared_data.ax_track)
+
             plots.plot_elevation(self.controller.shared_data.obj_track,
                                  self.controller.shared_data.ax_ele)
 
