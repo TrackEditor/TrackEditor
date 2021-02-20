@@ -52,7 +52,7 @@ def test_divide_segment():
     obj_track = track.Track()
     obj_track.add_gpx('test_cases/Innacessible_Island_Full.gpx')
 
-    # Overal initial information
+    # Overall initial information
     initial_total_distance = obj_track.df_track.distance.iloc[-1]
     initial_shape = obj_track.df_track.shape
 
@@ -101,9 +101,6 @@ def test_multi_divide_segment():
 
 @pytest.mark.skip(reason="To be reviewed")
 def test_change_order():
-    pd.set_option('display.max_rows', 500)
-    pd.set_option('display.max_columns', 500)
-    pd.set_option('display.width', 1000)
 
     check_points = {}
 
@@ -131,15 +128,37 @@ def test_change_order():
         assert obj_track.df_track.segment.iloc[cp] == new_order[check_points[cp]]
 
 
-@pytest.mark.skip(reason="To be reviewed")
-def test_fix_elevation():
-    # Load data
+def load_session(filename):
+    """
+    Load a .h5 session for a faster analysis
+    """
     obj_track = track.Track()
-    obj_track.add_gpx('test_cases\KUNGSLEDEN_Etapa_9_Kvikkjokk_Wild_Camping.gpx')
 
-    obj_track.fix_elevation(0)
-    plt.figure()
-    plt.plot(obj_track.df_track.distance, obj_track.df_track.ele)
-    plt.show()
+    with pd.HDFStore(filename) as store:
+        session_track = store['session']
 
-    assert True
+        obj_track.df_track = session_track
+
+    return obj_track
+
+
+def test_fix_elevation():
+    """
+    The established criteria is to check that the standard deviation and
+    maximum peak are lower than at the beggining.
+    """
+    # Load data
+    obj_track = load_session('test_cases\kungsleden.h5')
+
+    # Get initial data
+    initial_std = np.std(obj_track.df_track.ele)
+    initial_max_peak = max(obj_track.df_track.ele)
+
+    # Apply function
+    obj_track.fix_elevation(1)
+
+    final_std = np.std(obj_track.df_track.ele)
+    final_max_peak = max(obj_track.df_track.ele)
+
+    assert initial_max_peak > final_max_peak
+    assert initial_std > final_std
