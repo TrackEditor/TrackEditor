@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 COLOR_LIST = ['orange', 'dodgerblue', 'limegreen', 'hotpink', 'salmon',
               'blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'brown',
               'gold', 'turquoise', 'teal']
+N_COLOR = len(COLOR_LIST)
 
 
 def color_rgb(color_name: str) -> Tuple[float, float, float]:
@@ -250,7 +251,7 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
                           gained_elevation_lbl,
                           lost_elevation_lbl])
 
-        track_color.append(COLOR_LIST[seg_id-1])
+        track_color.append(COLOR_LIST[(seg_id-1) % N_COLOR])
 
     # Get info for the full track
     distance_lbl = get_distance_label(ob_track, -1, total=True)
@@ -310,7 +311,7 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     # Plot track
     segments_id = ob_track.df_track.segment.unique()
     for seg_id in segments_id:
-        cc = COLOR_LIST[seg_id - 1]  # color
+        cc = COLOR_LIST[(seg_id - 1) % N_COLOR]  # color
         segment = ob_track.get_segment(seg_id)
         reduced_segment = point_reduction(segment)
         ax.plot(reduced_segment.lon, reduced_segment.lat, color=cc,
@@ -357,7 +358,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
     def select_segment(seg2select):
         segment = ob_track.get_segment(seg2select)
         selected_segment, = ax_track.plot(segment.lon, segment.lat,
-                                          color=COLOR_LIST[seg2select - 1],
+                                          color=COLOR_LIST[(seg2select - 1) % N_COLOR],
                                           linewidth=4,
                                           zorder=10)
         ob_track.selected_segment.append(selected_segment)
@@ -433,7 +434,7 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
 
     if selected_segment_idx == 0:
         for seg_id in segments_id:
-            cc = COLOR_LIST[seg_id-1]  # color
+            cc = COLOR_LIST[(seg_id-1) % N_COLOR]  # color
             segment = ob_track.get_segment(seg_id)
             ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
             ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
@@ -452,7 +453,7 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
                             alpha=0.5, color='red')
     else:
         segment = ob_track.get_segment(selected_segment_idx)
-        cc = COLOR_LIST[selected_segment_idx - 1]
+        cc = COLOR_LIST[(selected_segment_idx - 1) % N_COLOR]
         ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
         ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)
 
