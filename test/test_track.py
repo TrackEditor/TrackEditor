@@ -1,6 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
+import datetime as dt
 
 import track
 from constants import prj_path
@@ -10,6 +11,120 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 
+def test_add_gpx():
+    # Load data
+    obj_track = track.Track()
+
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Check that the file is properly loaded
+    assert obj_track.df_track.lat.iloc[0] == -37.309450000000005
+    assert obj_track.df_track.lon.iloc[0] == -12.696700000000002
+    assert obj_track.df_track.ele.iloc[0] == 537.61
+    assert obj_track.df_track.lat.iloc[-1] == -37.30682
+    assert obj_track.df_track.lon.iloc[-1] == -12.697750000000001
+    assert obj_track.df_track.ele.iloc[-1] == 550.0200000000001
+    assert obj_track.loaded_files[0] == '0b6c5f39282494c3f47d966cb21ebf10'
+    assert obj_track.df_track.shape[0] == 141
+
+
+def test_update_summary():
+    """
+    Private method test: executed within add_gpx
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part1.gpx')
+
+    # Initial data
+    total_distance = obj_track.total_distance
+    total_uphill = obj_track.total_uphill
+    total_downhill = obj_track.total_downhill
+
+    # Force to update summary
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part2.gpx')
+
+    # Check that every summary number is updated
+    assert total_distance != obj_track.total_distance
+    assert total_uphill != obj_track.total_uphill
+    assert total_downhill != obj_track.total_downhill
+
+
+def test_insert_positive_elevation():
+    """
+    Private method test: executed within add_gpx
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Overall initial information
+    total_pos_elevation = obj_track.df_track.ele_pos_cum.iloc[-1]
+
+    assert total_pos_elevation == pytest.approx(909.71997)
+
+
+def test_insert_negative_elevation():
+    """
+    Private method test: executed within add_gpx
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Overall initial information
+    total_neg_elevation = obj_track.df_track.ele_neg_cum.iloc[-1]
+
+    assert total_neg_elevation == pytest.approx(-897.31000)
+
+
+def test_insert_distance():
+    """
+    Private method test: executed within add_gpx
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Overall initial information
+    total_distance = obj_track.df_track.distance.iloc[-1]
+
+    assert total_distance == pytest.approx(12.121018)
+
+
+def test_update_extremes():
+    """
+    Private method test: executed within add_gpx
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part1.gpx')
+
+    # Get reference data
+    extremes = obj_track.extremes
+
+    # Load more data
+    for i in range(2, 6):
+        obj_track.add_gpx(
+            f'{prj_path}/test/test_cases/Innacessible_Island_part{i}.gpx')
+
+    new_extremes = obj_track.extremes
+
+    assert not (new_extremes == extremes)
+    assert new_extremes[0] == pytest.approx(obj_track.df_track["lat"].min())
+    assert new_extremes[1] == pytest.approx(obj_track.df_track["lat"].max())
+    assert new_extremes[2] == pytest.approx(obj_track.df_track["lon"].min())
+    assert new_extremes[3] == pytest.approx(obj_track.df_track["lon"].max())
+
+
+@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_reverse_segment():
     """
     Verify that lat, lon and ele are properly inverted. Total distance is not
@@ -43,6 +158,7 @@ def test_reverse_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
+@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_divide_segment():
     """
     Split the segment in the index 100, before the segment id must be 1,
@@ -70,6 +186,7 @@ def test_divide_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
+@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_multi_divide_segment():
     """
     Split the segment at different indexes and check that the segment id
@@ -102,6 +219,7 @@ def test_multi_divide_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
+@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_change_order():
     """
     Check that the order has been properly changed by looking at first and
@@ -185,6 +303,7 @@ def test_fix_elevation():
     assert initial_std > final_std
 
 
+@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_remove_segment():
     """
     Remove one segment and check that it is not available after the removal
@@ -204,3 +323,95 @@ def test_remove_segment():
 
     # Check
     assert 2 not in obj_track.df_track.segment.unique()
+
+
+@pytest.mark.dependency(depends=['test_add_gpx'])
+def test_get_segment():
+    # Load data
+    obj_track = track.Track()
+
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part1.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part2.gpx')
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_part3.gpx')
+
+    # Reference segment
+    ref_df = obj_track.df_track[obj_track.df_track.segment == 2].copy()
+
+    # Get segment 2
+    seg_df = obj_track.get_segment(2)
+
+    # Compare segment 2 and copy
+    # Take care of NaN since np.nan == np.nan is false
+    assert (ref_df.fillna(0) == seg_df.fillna(0)).all().all()
+
+
+def datetime_to_integer(dt_time):
+    return 3600*24*dt_time.days + dt_time.seconds
+
+
+@pytest.mark.dependency(depends=['test_add_gpx'])
+def test_insert_timestamp():
+    # Load data
+    obj_track = track.Track()
+
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Apply method
+    initial_time = dt.datetime(2010, 1, 1)
+    obj_track.insert_timestamp(initial_time, 1.0)
+
+    # Checks
+    assert not obj_track.df_track.time.isnull().values.any()  # no NaN
+    assert obj_track.df_track.time.iloc[0] == initial_time
+    assert all(x > 0 for x in
+               list(map(datetime_to_integer,
+                        obj_track.df_track.time.diff().to_list()))[1:])
+    # timestamp is increasing
+
+
+@pytest.mark.dependency(depends=['test_add_gpx'])
+def test_columns_type():
+    # Load data
+    obj_track = track.Track()
+
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Apply method
+    obj_track._columns_type()
+
+    # Checks
+    types = obj_track.df_track.dtypes
+    assert types.lat == np.float32
+    assert types.lon == np.float32
+    assert types.ele == np.float32
+    assert types.segment == np.int32
+    assert str(types.time) == 'datetime64[ns]'
+
+
+@pytest.mark.dependency(depends=['test_add_gpx'])
+def test_save_gpx():
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Insert timestamp, no timestamp is checked in file_menu.py wrapper
+    initial_time = dt.datetime(2010, 1, 1)
+    obj_track.insert_timestamp(initial_time, 1.0)
+
+    # Apply method
+    filename = f'test_save_gpx_{np.random.randint(1e+6 - 1, 1e+6)}.gpx'
+    obj_track.save_gpx(filename)
+
+    # Load saved file
+    saved_track = track.Track()
+    saved_track.add_gpx(filename)
+
+    # Check
+    assert (obj_track.df_track.fillna(0) ==
+            saved_track.df_track.fillna(0)).all().all()
