@@ -7,10 +7,6 @@ import gpx
 TEST_PATH = os.path.dirname(__file__)
 
 
-def fail():
-    return False
-
-
 def test_load_file():
     route = gpx.Gpx(f"{TEST_PATH}/test_cases/basic_sample.gpx")
     assert route._load_file()
@@ -21,6 +17,7 @@ def test_load_file_big():
         route = gpx.Gpx(f"{TEST_PATH}/test_cases/over_10mb.gpx")
 
 
+@pytest.mark.skip(reason="Temporary not applicable")
 def test_load_file_no_permission():
     with pytest.raises(gpx.LoadGpxError):
         route = gpx.Gpx(f"{TEST_PATH}/test_cases/no_read_permission.gpx")
@@ -57,11 +54,6 @@ def test_to_dict():
     assert all([a == b for a, b in zip(first + last, first_ref + last_ref)])
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="Not implemented")
 def test_to_pandas():
-    assert fail()
-
-
-@pytest.mark.xfail
-def test_write():
-    assert fail()
+    pass
