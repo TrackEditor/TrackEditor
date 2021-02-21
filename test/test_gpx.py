@@ -2,7 +2,7 @@ import pytest
 import datetime as dt
 import os
 
-from src import gpx
+import gpx
 
 TEST_PATH = os.path.dirname(__file__)
 
@@ -17,13 +17,13 @@ def test_load_file():
 
 
 def test_load_file_big():
-    route = gpx.Gpx(f"{TEST_PATH}/test_cases/over_10mb.gpx")
-    assert route._load_file() is None
+    with pytest.raises(gpx.LoadGpxError):
+        route = gpx.Gpx(f"{TEST_PATH}/test_cases/over_10mb.gpx")
 
 
 def test_load_file_no_permission():
-    route = gpx.Gpx(f"{TEST_PATH}/test_cases/no_read_permission.gpx")
-    assert route._load_file() is None
+    with pytest.raises(gpx.LoadGpxError):
+        route = gpx.Gpx(f"{TEST_PATH}/test_cases/no_read_permission.gpx")
 
 
 def test_to_dict():

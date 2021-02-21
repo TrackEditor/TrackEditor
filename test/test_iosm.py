@@ -1,7 +1,8 @@
 import pytest
 import os
 
-from src import constants as c, iosm
+import constants as c
+import iosm
 
 
 def area_coor():
@@ -70,5 +71,5 @@ def test_download_tiles_nominal():
                       9: 2, 10: 2, 11: 4, 12: 4, 13: 6, 14: 16}
     total_tiles = sum(list(expected_tiles.values())[:my_zoom+1])
     (lon_min, lon_max, lat_min, lat_max) = area_coor()
-    assert iosm.download_tiles(lat_min, lon_min, lat_max, lon_max,
-                               max_zoom=my_zoom) == total_tiles
+    assert iosm.download_tiles_by_deg(lat_min, lon_min, lat_max, lon_max,
+                                      max_zoom=my_zoom) == total_tiles

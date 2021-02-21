@@ -1,8 +1,9 @@
 import pytest
 import pandas as pd
 
-from src.db_handler import DbHandler
-from src import constants as c, iosm
+from db_handler import DbHandler
+import constants as c
+import iosm
 
 
 def area_coor():
