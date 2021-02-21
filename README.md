@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Build Status](https://github.com/alguerre/TrackEditor/actions/workflows/python-app.yml/badge.svg)
+![Open Issues](https://img.shields.io/github/issues/alguerre/TrackEditor)
 
 # TrackEditor
 
