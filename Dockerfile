@@ -1,15 +1,9 @@
 # Welcome to the TrackEditor Dockerfile
 # This has been created to provide a ready environment to launch the app.
 # Proposed procedure:
-# sudo docker build -t track_editor_im:1.0 .
+# docker build -t track_editor_im:1.0 .
 # xhost +
-# sudo docker run \ 
-#    --rm \ 
-#    -e DISPLAY=$DISPLAY \
-#    -v /tmp/.X11-unix:/tmp/.X11-unix  \
-#    -v /home/$USER/Desktop:/home/Desktop \
-#    -v /var/log:/home/TrackEditor/log \
-#    track_editor_im:1.0 
+# docker-compose up -d
 #
 
 FROM ubuntu:20.10
@@ -27,13 +21,8 @@ RUN apt-get install -y \
         python3-pip \
         python3-tk
 
-RUN pip3 install \
-        numpy \
-        matplotlib \
-        pandas \
-        urllib3 \
-        geopy \
-        gpxpy
+ADD ./requirements.txt /
+RUN pip install -r requirements.txt
 
 # Prepare file system
 WORKDIR /home/TrackEditor
@@ -41,3 +30,4 @@ COPY src /home/TrackEditor/src
 
 # Launch app
 CMD ["/bin/python3", "/home/TrackEditor/src/track_editor.py"]
+                                                    

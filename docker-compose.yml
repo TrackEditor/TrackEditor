@@ -1,0 +1,11 @@
+version: '3.1'
+
+services:
+    track_editor:
+        image: track_editor_im:1.0
+        environment:
+            DISPLAY: ${DISPLAY}
+        volumes:
+            - /tmp/.X11-unix:/tmp/.X11-unix  # configure X11
+            - /home/${USER}/Desktop:/home/Desktop  # set visibility for io files
+            - /var/log:/home/TrackEditor/log  # share log directory
