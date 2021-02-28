@@ -64,7 +64,7 @@ def test_download_url_wrong_tile():
     assert not iosm._download_url(fake_input, fake_input, fake_input)
 
 
-def test_download_tiles_nominal():
+def test_download_tiles_by_deg():
     # Total number of tiles can differ according to zoom level
     my_zoom = 10
     expected_tiles = {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 2,
@@ -73,3 +73,15 @@ def test_download_tiles_nominal():
     (lon_min, lon_max, lat_min, lat_max) = area_coor()
     assert iosm.download_tiles_by_deg(lat_min, lon_min, lat_max, lon_max,
                                       max_zoom=my_zoom) == total_tiles
+
+
+def test_download_tiles_by_num():
+    my_zoom = 10
+
+    (lon_min, lon_max, lat_min, lat_max) = area_coor()
+    x_min, y_min = iosm.deg2num(lat_min, lon_min, my_zoom)
+    x_max, y_max = x_min + 2, y_min + 2  # limits are included
+
+    assert iosm.download_tiles_by_num(x_min, y_min, x_max, y_max,
+                                      max_zoom=my_zoom) == \
+           (x_max - x_min + 1) * (y_max - y_min + 1)
