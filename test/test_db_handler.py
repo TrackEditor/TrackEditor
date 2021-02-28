@@ -54,7 +54,6 @@ def test_print_db():
     assert isinstance(dbh.print_tiles(verbose=False), type(pd.DataFrame()))
 
 
-@pytest.mark.dependency()
 def test_insert_tile():
     dbh = get_db()
     xtiles, ytiles = area_tiles(c.max_zoom)
@@ -63,7 +62,6 @@ def test_insert_tile():
     assert dbh._tile_exists(c.max_zoom, xtiles.start, ytiles.start)
 
 
-@pytest.mark.dependency()
 def test_remove_tile():
     dbh = get_db()
     xtiles, ytiles = area_tiles(c.max_zoom)
@@ -80,7 +78,6 @@ def test_close_db():
         assert False
 
 
-@pytest.mark.dependency(depends=['test_insert_tile', 'test_remove_tile'])
 def test_get_tile_size():
     dbh = get_db()
     xtiles, ytiles = area_tiles(c.max_zoom)
@@ -94,7 +91,6 @@ def test_get_tile_size():
     assert dbh.get_tile_size(c.max_zoom, xtiles.start, ytiles.start) == 2048
 
 
-@pytest.mark.dependency(depends=['test_insert_tile', 'test_remove_tile'])
 def test_get_tile_status():
     dbh = get_db()
     xtiles, ytiles = area_tiles(c.max_zoom)
@@ -107,7 +103,6 @@ def test_get_tile_status():
     assert not dbh.get_tile_status(c.max_zoom, xtiles.start, ytiles.start)
 
 
-@pytest.mark.dependency(depends=['test_insert_tile', 'update_tile_status'])
 def test_update_tile_status():
     dbh = get_db()
     xtiles, ytiles = area_tiles(c.max_zoom)
@@ -122,7 +117,9 @@ def test_update_tile_status():
     assert dbh.get_tile_status(c.max_zoom, xtiles.start, ytiles.start)
 
 
-@pytest.mark.dependency(depends=['test_insert_tile', 'test_remove_tile'])
 def test_tile_exists():
-    # Method under tests is used by other cases
-    assert True
+    dbh = get_db()
+    dbh.insert_tile(1, 1, 0, True, "/test", 1028)
+
+    assert dbh._tile_exists(1, 1, 0)
+    assert not dbh._tile_exists(1, 1, 4)

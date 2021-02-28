@@ -8,38 +8,41 @@ TEST_PATH = os.path.dirname(__file__)
 
 
 def test_load_file():
-    route = gpx.Gpx(f"{TEST_PATH}/test_cases/basic_sample.gpx")
+    route = gpx.Gpx(f'{TEST_PATH}/test_cases/basic_sample.gpx')
     assert route._load_file()
 
 
 def test_load_file_big():
     with pytest.raises(gpx.LoadGpxError):
-        route = gpx.Gpx(f"{TEST_PATH}/test_cases/over_10mb.gpx")
+        route = gpx.Gpx(f'{TEST_PATH}/test_cases/over_10mb.gpx')
 
 
-@pytest.mark.skip(reason="Temporary not applicable")
 def test_load_file_no_permission():
+    file = f'{TEST_PATH}/test_cases/no_read_permission.gpx'
+
+    os.chmod(file, 37449)
+
     with pytest.raises(gpx.LoadGpxError):
-        route = gpx.Gpx(f"{TEST_PATH}/test_cases/no_read_permission.gpx")
+        route = gpx.Gpx(file)
 
 
 def test_to_dict():
-    route = gpx.Gpx(f"{TEST_PATH}/test_cases/basic_sample.gpx")
+    route = gpx.Gpx(f'{TEST_PATH}/test_cases/basic_sample.gpx')
     route_dict = route.to_dict()
 
     # Extract data to check
-    first = [route_dict["lat"][0], route_dict["lon"][0],
-             route_dict["ele"][0]]
-    last = [route_dict["lat"][-1], route_dict["lon"][-1],
-            route_dict["ele"][-1]]
+    first = [route_dict['lat'][0], route_dict['lon'][0],
+             route_dict['ele'][0]]
+    last = [route_dict['lat'][-1], route_dict['lon'][-1],
+            route_dict['ele'][-1]]
 
     # Insert time in an easy-to-compare format
-    first_time = route_dict["time"][0]
+    first_time = route_dict['time'][0]
     first.append(dt.datetime(first_time.year, first_time.month,
                              first_time.day, first_time.hour,
                              first_time.minute, first_time.second))
 
-    last_time = route_dict["time"][-1]
+    last_time = route_dict['time'][-1]
     last.append(dt.datetime(last_time.year, last_time.month,
                             last_time.day, last_time.hour,
                             last_time.minute, last_time.second))
@@ -54,6 +57,14 @@ def test_to_dict():
     assert all([a == b for a, b in zip(first + last, first_ref + last_ref)])
 
 
-@pytest.mark.skip(reason="Not implemented")
 def test_to_pandas():
-    pass
+    route = gpx.Gpx(f'{TEST_PATH}/test_cases/basic_sample.gpx')
+    route_df = route.to_pandas()
+
+    assert route_df.iloc[0].lat == pytest.approx(46.240649)
+    assert route_df.iloc[0].lon == pytest.approx(6.0342)
+    assert route_df.iloc[0].ele == pytest.approx(442.0)
+
+    assert route_df.iloc[-1].lat == pytest.approx(46.230118)
+    assert route_df.iloc[-1].lon == pytest.approx(6.052533)
+    assert route_df.iloc[-1].ele == pytest.approx(428.2)
