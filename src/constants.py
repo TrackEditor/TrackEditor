@@ -8,7 +8,6 @@ maximum_file_size = 10e+6
 max_zoom = 16
 map_size = 2  # number of tiles
 margin_outbounds = 0  # extra tiles to load
-click_distance = 0.25  # km TODO: this should be a function on zoom
 max_displayed_points = 100
 
 # fix elevation
@@ -25,7 +24,7 @@ src_path = os.path.dirname(os.path.realpath(__file__))
 prj_path = os.path.dirname(src_path)
 
 # OSM request options
-version = "v0.9"
+version = "v0.10"
 email = "alguerre@outlook.com"
 tool = "TrackEditor"
 

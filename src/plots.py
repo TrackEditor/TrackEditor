@@ -14,6 +14,8 @@ import iosm
 import track
 
 
+CLICK_DISTANCE = 0.25  # default value
+
 logger = logging.getLogger(__name__)
 
 # TODO should be this refactor in a class? Does that make sense?
@@ -39,9 +41,9 @@ def color_rgb(color_name: str) -> Tuple[float, float, float]:
 
 
 def rgb2hexcolor(rgb_color: Tuple[int, int, int]) -> str:
-    return '#%02x%02x%02x' % ( int(255*rgb_color[0]),
-                               int(255*rgb_color[1]),
-                               int(255*rgb_color[2]))
+    return '#%02x%02x%02x' % (int(255*rgb_color[0]),
+                              int(255*rgb_color[1]),
+                              int(255*rgb_color[2]))
 
 
 def auto_zoom(lat_min: float, lon_min: float,
@@ -154,6 +156,8 @@ def get_map_box(extreme_tiles: Tuple[int, int, int, int], zoom: int) -> \
 
 
 def generate_map(ob_track: track.Track) -> np.array:
+    global CLICK_DISTANCE
+
     # Define map perspective
     lat_min, lat_max, lon_min, lon_max = ob_track.extremes
     zoom = auto_zoom(lat_min, lon_min, lat_max, lon_max)
@@ -168,11 +172,15 @@ def generate_map(ob_track: track.Track) -> np.array:
                                max_zoom=zoom, extra_tiles=c.margin_outbounds)
     logger.debug('generate map')
     # Generate map image
-    # map_img = create_map_img(extreme_tiles_expanded, zoom)
     map_img = create_map_img(extreme_tiles, zoom)
 
     # Define map box
     bbox = get_map_box(extreme_tiles, zoom)
+
+    # Configure the global variable
+    get_distance = lambda x, y: abs(geopy.distance.geodesic(x, y).km)
+    CLICK_DISTANCE = 0.05 * \
+                     get_distance([bbox[0], bbox[2]], [bbox[1], bbox[3]])
 
     return map_img, bbox
 
@@ -359,7 +367,8 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
     def select_segment(seg2select):
         segment = ob_track.get_segment(seg2select)
         selected_segment, = ax_track.plot(segment.lon, segment.lat,
-                                          color=COLOR_LIST[(seg2select - 1) % N_COLOR],
+                                          color=COLOR_LIST[(seg2select - 1)
+                                                           % N_COLOR],
                                           linewidth=4,
                                           zorder=10)
         ob_track.selected_segment.append(selected_segment)
@@ -402,13 +411,14 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
         # Click position to distance
         if event.xdata and event.ydata:
             point_distance, seg2select = \
-                get_closest_segment(ob_track.df_track, (event.ydata, event.xdata))
+                get_closest_segment(ob_track.df_track,
+                                    (event.ydata, event.xdata))
         else:  # click outside plot
             point_distance = 1e+10
             seg2select = 0
 
         # Highlight track and elevation
-        if point_distance < c.click_distance and seg2select > 0:
+        if point_distance < CLICK_DISTANCE and seg2select > 0:
             deselect_segment()  # deselect current segment if needed
             select_segment(seg2select)
 
