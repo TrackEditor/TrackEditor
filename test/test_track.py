@@ -124,7 +124,6 @@ def test_update_extremes():
     assert new_extremes[3] == pytest.approx(obj_track.df_track["lon"].max())
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_reverse_segment():
     """
     Verify that lat, lon and ele are properly inverted. Total distance is not
@@ -158,7 +157,6 @@ def test_reverse_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_divide_segment():
     """
     Split the segment in the index 100, before the segment id must be 1,
@@ -186,7 +184,6 @@ def test_divide_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_multi_divide_segment():
     """
     Split the segment at different indexes and check that the segment id
@@ -219,7 +216,6 @@ def test_multi_divide_segment():
     assert initial_shape == obj_track.df_track.shape
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_change_order():
     """
     Check that the order has been properly changed by looking at first and
@@ -303,7 +299,30 @@ def test_fix_elevation():
     assert initial_std > final_std
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
+def test_smooth_elevation():
+    """
+    The established criteria is to check that the standard deviation and
+    maximum peak are lower than at the beggining.
+    """
+    # Load data
+    obj_track = track.Track()
+    obj_track.add_gpx(
+        f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
+
+    # Get initial data
+    initial_std = np.std(obj_track.df_track.ele)
+    initial_max_peak = max(obj_track.df_track.ele)
+
+    # Apply function
+    obj_track.smooth_elevation(1)
+
+    final_std = np.std(obj_track.df_track.ele)
+    final_max_peak = max(obj_track.df_track.ele)
+
+    assert initial_max_peak > final_max_peak
+    assert initial_std > final_std
+
+
 def test_remove_segment():
     """
     Remove one segment and check that it is not available after the removal
@@ -325,7 +344,6 @@ def test_remove_segment():
     assert 2 not in obj_track.df_track.segment.unique()
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_get_segment():
     # Load data
     obj_track = track.Track()
@@ -352,7 +370,6 @@ def datetime_to_integer(dt_time):
     return 3600*24*dt_time.days + dt_time.seconds
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_insert_timestamp():
     # Load data
     obj_track = track.Track()
@@ -373,7 +390,6 @@ def test_insert_timestamp():
     # timestamp is increasing
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_columns_type():
     # Load data
     obj_track = track.Track()
@@ -393,7 +409,6 @@ def test_columns_type():
     assert str(types.time) == 'datetime64[ns]'
 
 
-@pytest.mark.dependency(depends=['test_add_gpx'])
 def test_save_gpx():
     # Load data
     obj_track = track.Track()

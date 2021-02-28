@@ -177,6 +177,28 @@ class Track:
         with open(gpx_filename, 'w') as f:
             f.write(ob_gpxpy.to_xml())
 
+    def smooth_elevation(self, index: int):
+        """
+        Apply moving average to fix elevation
+        """
+        df_segment = self.get_segment(index)
+        elevation = df_segment.ele.to_numpy()
+
+        # Moving average
+        n = int(np.ceil(df_segment.shape[0]*0.05))
+        elevation_ma = utils.moving_average(elevation, n)
+
+        # Concatenate moving average and initial line
+        smooth_elevation = np.concatenate(
+            (np.array([elevation[0] + i*(elevation_ma[0]-elevation[0])/n
+                       for i in range(1, n)]),
+             elevation_ma)
+        )
+
+        # Insert new elevation in track
+        df_segment['ele'] = smooth_elevation
+        self.df_track.loc[self.df_track['segment'] == index] = df_segment
+
     def fix_elevation(self, index: int):
         df_segment = self.get_segment(index)
 
@@ -258,7 +280,6 @@ class Track:
         :param div_index: refers to the index of the full df_track, not segment
         """
         self.df_track['index'] = self.df_track.index
-        segment_index = self.df_track.index[div_index]
 
         def segment_index_modifier(row):
             if row['index'] < div_index:

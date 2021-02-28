@@ -4,6 +4,7 @@ import tkinter.messagebox as messagebox
 import collections
 
 import plots
+import constants
 from split_segment import SplitSegment as SplitSegmentCallback
 
 
@@ -187,10 +188,20 @@ class EditMenu(tk.Menu):
         """
         selected_segment = \
             self.controller.shared_data.obj_track.selected_segment_idx
+        segment_idx = selected_segment[0]
+        segment = self.controller.shared_data.obj_track.get_segment(segment_idx)
 
         if len(selected_segment) == 1:
-            segment_idx = selected_segment[0]
-            self.controller.shared_data.obj_track.fix_elevation(segment_idx)
+            if segment.shape[0] > constants.fix_thr:
+                try:
+                    self.controller.shared_data.obj_track.fix_elevation(
+                        segment_idx)
+                except ValueError:
+                    self.controller.shared_data.obj_track.smooth_elevation(
+                        segment_idx)
+            else:
+                self.controller.shared_data.obj_track.smooth_elevation(
+                    segment_idx)
 
             # Update plot
             plots.plot_track_info(
