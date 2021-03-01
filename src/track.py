@@ -292,6 +292,7 @@ class Track:
                                 axis=1)
 
         self.df_track = self.df_track.drop(['index'], axis=1)
+        self.size += 1
 
         return True
 

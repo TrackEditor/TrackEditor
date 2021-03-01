@@ -182,6 +182,7 @@ def test_divide_segment():
     # Non-regression checks
     assert initial_total_distance == obj_track.df_track.distance.iloc[-1]
     assert initial_shape == obj_track.df_track.shape
+    assert obj_track.size == 2
 
 
 def test_multi_divide_segment():
@@ -214,6 +215,7 @@ def test_multi_divide_segment():
     # Non-regression checks
     assert initial_total_distance == obj_track.df_track.distance.iloc[-1]
     assert initial_shape == obj_track.df_track.shape
+    assert obj_track.size == 4
 
 
 def test_change_order():
