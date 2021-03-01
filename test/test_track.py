@@ -25,7 +25,6 @@ def test_add_gpx():
     assert obj_track.df_track.lat.iloc[-1] == -37.30682
     assert obj_track.df_track.lon.iloc[-1] == -12.697750000000001
     assert obj_track.df_track.ele.iloc[-1] == 550.0200000000001
-    assert obj_track.loaded_files[0] == '0b6c5f39282494c3f47d966cb21ebf10'
     assert obj_track.df_track.shape[0] == 141
 
 
