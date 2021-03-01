@@ -21,11 +21,11 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        export TZ=Europe/Minsk && \
-          ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-          echo $TZ > /etc/timezone
-        apt-get update -y
-        apt-get install -y python3-tk
+        #export TZ=Europe/Minsk && \
+        #  ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+        #  echo $TZ > /etc/timezone
+        #apt-get update -y
+        #apt-get install -y python3-tk
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
@@ -38,5 +38,5 @@ jobs:
     - name: Test with pytest
       run: |
         export PYTHONPATH=$(pwd)/src/
-        chmod 111 $(pwd)/test/test_cases/nominal_route.gpx
+        #chmod 111 $(pwd)/test/test_cases/nominal_route.gpx
         pytest --cov-report term  --cov=.
