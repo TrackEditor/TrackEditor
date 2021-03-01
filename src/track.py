@@ -18,30 +18,25 @@ class Track:
 
         # General purpose properties
         self.size = 0  # number of gpx in track
-        self.last_index = 0
+        self.last_segment_idx = 0
         self.extremes = (0, 0, 0, 0)  # lat min, lat max, lon min, lon max
         self.total_distance = 0
         self.total_uphill = 0
         self.total_downhill = 0
-        self.loaded_files = []  # md5 of files in Track
         self.selected_segment = []  # line object from matplotlib
         self.selected_segment_idx = []  # index of the segment
 
     def add_gpx(self, file: str):
-        md5_gpx = utils.md5sum(file)
+        gpx_track = gpx.Gpx(file)
+        df_gpx = gpx_track.to_pandas()
+        df_gpx = df_gpx[self.columns]
+        self.size += 1
+        self.last_segment_idx += 1
+        df_gpx['segment'] = self.last_segment_idx
 
-        if md5_gpx not in self.loaded_files:
-            gpx_track = gpx.Gpx(file)
-            df_gpx = gpx_track.to_pandas()
-            df_gpx = df_gpx[self.columns]
-            self.loaded_files.append(md5_gpx)
-            self.size += 1
-            self.last_index += 1
-            df_gpx['segment'] = self.last_index
-
-            self.df_track = pd.concat([self.df_track, df_gpx])
-            self.df_track = self.df_track.reset_index(drop=True)
-            self._update_summary()  # for full track
+        self.df_track = pd.concat([self.df_track, df_gpx])
+        self.df_track = self.df_track.reset_index(drop=True)
+        self._update_summary()  # for full track
 
     def _update_summary(self):
         self._insert_positive_elevation()
@@ -267,8 +262,6 @@ class Track:
 
         # Update metadata
         self._update_summary()
-        # self.loaded_files[index-1] = None  # not useful functionality
-        # when segments are split
 
         # Clean full track if needed
         if self.size == 0:
@@ -294,6 +287,7 @@ class Track:
 
         self.df_track = self.df_track.drop(['index'], axis=1)
         self.size += 1
+        self.last_segment_idx = max(self.df_track['segment'])
 
         return True
 
