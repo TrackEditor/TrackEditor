@@ -48,12 +48,28 @@ def not_implemented(function: types.FunctionType):
     """
     Decorator to show warning for not implemented functionalities
     :param function: not implemented function
-    :return: wra
+    :return: wrapper function
     """
     def wrapper_function(*args, **kwargs):
         messagebox.showwarning(
             'Warning',
             f'Not implemented functionality: {function.__name__}')
+    return wrapper_function
+
+
+def exception_handler(function: types.FunctionType):
+    """
+    Decorator to show warning for not implemented functionalities
+    :param function: not implemented function
+    :return: wra
+    """
+    def wrapper_function(*args, **kwargs):
+        try:
+            function(*args, **kwargs)
+        except Exception as e:
+            messagebox.showerror(
+                'Error',
+                f'Exception at {function.__name__}\n{e}')
     return wrapper_function
 
 

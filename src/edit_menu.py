@@ -5,6 +5,7 @@ import collections
 
 import plots
 import constants
+from utils import exception_handler
 from split_segment import SplitSegment as SplitSegmentCallback
 
 
@@ -43,6 +44,7 @@ class EditMenu(tk.Menu):
         self.timestamp = dt.datetime(2000, 1, 1, 0, 0, 0)
         self.speed = 0
 
+    @exception_handler
     def reverse_segment(self):
         """
         Reverse order of data for the selected segment.
@@ -74,6 +76,7 @@ class EditMenu(tk.Menu):
             messagebox.showerror('Warning',
                                  'No segment is selected')
 
+    @exception_handler
     def insert_time(self):
         """
         Add time data to the whole track.
@@ -182,6 +185,7 @@ class EditMenu(tk.Menu):
         btn_clear.pack(side=tk.RIGHT, padx=10)
         btn_submit.pack(side=tk.RIGHT, padx=10)
 
+    @exception_handler
     def fix_elevation(self):
         """
         Apply the elevation correction on the selected segment.
@@ -220,6 +224,7 @@ class EditMenu(tk.Menu):
             messagebox.showerror('Warning',
                                  'No segment is selected')
 
+    @exception_handler
     def remove_segment(self):
         selected_segment = \
             self.controller.shared_data.obj_track.selected_segment_idx
@@ -287,6 +292,7 @@ class EditMenu(tk.Menu):
 
         interaction.connect()
 
+    @exception_handler
     def change_order(self):
         """
         change order

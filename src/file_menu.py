@@ -7,7 +7,7 @@ import types
 
 import plots
 import track
-from utils import quit_app
+from utils import quit_app, exception_handler
 
 
 class FileMenu(tk.Menu):
@@ -37,6 +37,7 @@ class FileMenu(tk.Menu):
                                   command=lambda: quit_app(self.parent))
         parent.add_cascade(label='File', menu=self.filemenu)
 
+    @exception_handler
     def load_track(self):
         # Load gpx file
         gpx_file = tk.filedialog.askopenfile(
@@ -64,6 +65,7 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.cid.append(cid)
             self.controller.shared_data.canvas.draw()
 
+    @exception_handler
     def load_session(self):
         proceed = True
 
@@ -105,6 +107,7 @@ class FileMenu(tk.Menu):
                         self.controller.shared_data.ax_track_info)
                     self.controller.shared_data.canvas.draw()
 
+    @exception_handler
     def new_session(self):
         proceed = True
 
@@ -135,6 +138,7 @@ class FileMenu(tk.Menu):
             # Update plots
             self.controller.shared_data.canvas.draw()
 
+    @exception_handler
     def save_session(self):
         session = self.controller.shared_data.obj_track.df_track
 
@@ -157,6 +161,7 @@ class FileMenu(tk.Menu):
             store.get_storer('session').attrs.metadata = metadata
             store.close()
 
+    @exception_handler
     def save_gpx(self):
         if self.controller.shared_data.obj_track.df_track.time.isnull().any():
             msg = 'Timestamp is needed in order to generate your gpx.\n' + \

@@ -267,7 +267,8 @@ class Track:
 
         # Update metadata
         self._update_summary()
-        self.loaded_files[index-1] = None
+        # self.loaded_files[index-1] = None  # not useful functionality
+        # when segments are split
 
         # Clean full track if needed
         if self.size == 0:
