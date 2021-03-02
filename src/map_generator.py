@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def point_reduction(df_segment: pd.DataFrame):
     positions = sorted(list(set([int(pos) for pos in
-                                 np.linspace(0, len(df_segment)-1,
+                                 np.linspace(0, len(df_segment) - 1,
                                              c.max_displayed_points)]
                                 )
                             )
@@ -61,8 +61,7 @@ def generate_map(ob_track: track.Track) -> np.array:
 def get_click_distance(bbox):
     click_distance = 0.05 * abs(geopy.distance.geodesic(
         [bbox[0], bbox[2]],
-        [bbox[1], bbox[3]])
-                                .km)
+        [bbox[1], bbox[3]]).km)
     return click_distance
 
 
@@ -148,11 +147,11 @@ def auto_zoom(lat_min: float, lon_min: float,
         width = abs(num_x_max - num_x_min)
         height = abs(num_y_max - num_y_min)
 
-        logger.debug(f'auto_zoom: {zoom - 1}, ' +
-                     f'width: {width}, height: {height}')
+        logger.debug(
+            f'auto_zoom: {zoom - 1}, width: {width}, height: {height}')
         if width > c.map_size or height > c.map_size:
-            logger.debug(f'auto_zoom: {zoom -1},' +
-                         f'width: {width}, height: {height}')
+            logger.debug(
+                f'auto_zoom: {zoom -1}, width: {width}, height: {height}')
             return zoom - 1  # in this case previous zoom is the good one
 
         if (width == c.map_size and height < c.map_size) or \

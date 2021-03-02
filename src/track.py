@@ -191,6 +191,7 @@ class Track:
         )
 
         # Insert new elevation in track
+        df_segment = df_segment.drop(columns=['ele'])
         df_segment['ele'] = smooth_elevation
         self.df_track.loc[self.df_track['segment'] == index] = df_segment
 

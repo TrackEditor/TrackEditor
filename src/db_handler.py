@@ -9,20 +9,19 @@ pd.set_option('display.width', 220)
 LOGGER = logging.getLogger(__name__)
 
 
-class DbHandler:  # TODO: insert herency of DbTile dedicated class
-                  # TODO: create a tile class?
+class DbHandler:
     def __init__(self):
-        self.conn = None  # connection
-        self.cur = None  # cursor
+        self.conn = None
+        self.cur = None
 
     def open_db(self):
         self.conn = sqlite3.connect('db_track_editor.sqlite')
         self.cur = self.conn.cursor()
         try:
-            self.cur.execute("""CREATE TABLE Tiles (zoom INTEGER, 
-                                                       x INTEGER, 
-                                                       y INTEGER, 
-                                                  status BOOLEAN, 
+            self.cur.execute("""CREATE TABLE Tiles (zoom INTEGER,
+                                                       x INTEGER,
+                                                       y INTEGER,
+                                                  status BOOLEAN,
                                                     path TEXT,
                                                     size INTEGER)
                              """)
@@ -48,8 +47,8 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
             size = 0
 
         if not self._tile_exists(zoom, xtile, ytile):
-            query = f"""INSERT OR IGNORE INTO Tiles 
-                        (zoom, x, y, status, path, size) 
+            query = """INSERT OR IGNORE INTO Tiles
+                        (zoom, x, y, status, path, size)
                         VALUES(?, ?, ?, ?, ?, ?)
                     """
             self.cur.execute(query, (zoom, xtile, ytile, status, path, size))
@@ -67,12 +66,12 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
             LOGGER.error('No connection with data base')
             return False  # not connected
 
-        query = f"""UPDATE Tiles SET 
+        query = """UPDATE Tiles SET
                         status=?,
-                        size=? 
-                    WHERE 
-                        x=? AND 
-                        y=? AND 
+                        size=?
+                    WHERE
+                        x=? AND
+                        y=? AND
                         zoom=?
                 """
         self.cur.execute(query, (status, size, xtile, ytile, zoom))
@@ -125,8 +124,9 @@ class DbHandler:  # TODO: insert herency of DbTile dedicated class
             self.cur.execute(query, (zoom, xtile, ytile))
             return True
         else:
-            LOGGER.warning(f'Trying to remove non-existing tile: ' +
-                           f'({zoom},{xtile},{ytile})')
+            LOGGER.warning(
+                f'Trying to remove non-existing tile: ({zoom},{xtile},{ytile})'
+            )
             return False
 
     def _tile_exists(self, zoom: int, xtile: int, ytile: int) -> bool:

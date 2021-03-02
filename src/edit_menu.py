@@ -139,7 +139,7 @@ class EditMenu(tk.Menu):
                                width=8,
                                justify=tk.RIGHT,
                                relief=tk.FLAT)
-        lbl_label = tk.Label(master=frm_form, text=f'speed (km/h)', anchor='w')
+        lbl_label = tk.Label(master=frm_form, text='speed (km/h)', anchor='w')
         lbl_label.grid(row=i, column=0, pady=10)
         spn_speed.grid(row=i, column=1)
 
@@ -193,7 +193,8 @@ class EditMenu(tk.Menu):
         selected_segment = \
             self.controller.shared_data.obj_track.selected_segment_idx
         segment_idx = selected_segment[0]
-        segment = self.controller.shared_data.obj_track.get_segment(segment_idx)
+        segment = \
+            self.controller.shared_data.obj_track.get_segment(segment_idx)
 
         if len(selected_segment) == 1:
             if segment.shape[0] > constants.fix_thr:
@@ -324,9 +325,9 @@ class EditMenu(tk.Menu):
 
             # Create widgets
             var = tk.StringVar(top)
-            var.set(i+1)
+            var.set(i + 1)
             color = utils.rgb2hexcolor(
-                utils.color_rgb(plots.COLOR_LIST[(entry-1) % plots.N_COLOR]))
+                utils.color_rgb(plots.COLOR_LIST[(entry - 1) % plots.N_COLOR]))
 
             spn_seg[entry] = tk.Spinbox(from_=1,
                                         to=99,
@@ -353,9 +354,9 @@ class EditMenu(tk.Menu):
                         pady=5)  # fill in horizontal direction
 
         def clear_box():
-            for i, s in enumerate(spn_seg):
+            for j, s in enumerate(spn_seg):
                 spn_seg[s].delete(0, 8)
-                spn_seg[s].insert(0, i+1)
+                spn_seg[s].insert(0, j + 1)
             spn_seg.insert(0, 0)
 
         def insert_order():

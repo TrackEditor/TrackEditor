@@ -1,6 +1,5 @@
 import os
 import tkinter as tk
-import tkinter.filedialog as filedialog
 import tkinter.messagebox as messagebox
 import pandas as pd
 import types

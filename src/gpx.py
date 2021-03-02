@@ -45,14 +45,11 @@ class Gpx:
 
         n_tracks = len(self._gpx.tracks)
         n_segments = [len(track.segments) for track in self._gpx.tracks]
-        n_points = [[segment.points for segment in track.segments]
-                    for track in self._gpx.tracks]
 
         for i_track in range(n_tracks):
             for i_seg in range(n_segments[i_track]):
                 for i_point in \
                         self._gpx.tracks[i_track].segments[i_seg].points:
-                    # TODO: implement corner case in which one gpx has missing information
                     self._gpx_dict["lat"].append(i_point.latitude)
                     self._gpx_dict["lon"].append(i_point.longitude)
                     self._gpx_dict["ele"].append(i_point.elevation)

@@ -110,7 +110,7 @@ def color_rgb(color_name: str) -> Tuple[float, float, float]:
     return 0.0, 0.0, 0.0
 
 
-def rgb2hexcolor(rgb_color: Tuple[int, int, int]) -> str:
+def rgb2hexcolor(rgb_color: Tuple[float, float, float]) -> str:
     return '#%02x%02x%02x' % (int(255*rgb_color[0]),
                               int(255*rgb_color[1]),
                               int(255*rgb_color[2]))

@@ -100,7 +100,7 @@ def _download_url(zoom: int, xtile: int, ytile: int) -> bool:
     if int(request_size) == tile_size:
         valid_tail = True
     else:
-        LOGGER.error(f'Size check has failed for tail ' +
+        LOGGER.error('Size check has failed for tail ' +
                      f'({zoom},{xtile},{ytile}) at {tile_path}')
 
     DBH.insert_tile(zoom, xtile, ytile, valid_tail, tile_path, tile_size)
