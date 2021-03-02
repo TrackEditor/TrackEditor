@@ -3,6 +3,8 @@ import tkinter as tk
 import tkinter.messagebox as messagebox
 import types
 import numpy as np
+import matplotlib.colors as mcolors
+from typing import Tuple
 
 
 def md5sum(file: str) -> str:
@@ -93,3 +95,22 @@ def quit_app(parent: tk.Tk):
     parent.quit()  # stops mainloop
     parent.destroy()  # this is necessary on Windows to prevent
     # Fatal Python Error: PyEval_RestoreThread: NULL tstate
+
+
+def color_rgb(color_name: str) -> Tuple[float, float, float]:
+    color_collection = mcolors.CSS4_COLORS
+
+    by_hsv = sorted((tuple(mcolors.to_rgb(color)), name)
+                    for name, color in color_collection.items())
+
+    for color in by_hsv:
+        if color_name == color[1]:
+            return color[0]
+
+    return 0.0, 0.0, 0.0
+
+
+def rgb2hexcolor(rgb_color: Tuple[int, int, int]) -> str:
+    return '#%02x%02x%02x' % (int(255*rgb_color[0]),
+                              int(255*rgb_color[1]),
+                              int(255*rgb_color[2]))

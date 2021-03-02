@@ -5,7 +5,7 @@ import collections
 
 import plots
 import constants
-from utils import exception_handler
+import utils
 from split_segment import SplitSegment as SplitSegmentCallback
 
 
@@ -44,7 +44,7 @@ class EditMenu(tk.Menu):
         self.timestamp = dt.datetime(2000, 1, 1, 0, 0, 0)
         self.speed = 0
 
-    @exception_handler
+    @utils.exception_handler
     def reverse_segment(self):
         """
         Reverse order of data for the selected segment.
@@ -76,7 +76,7 @@ class EditMenu(tk.Menu):
             messagebox.showerror('Warning',
                                  'No segment is selected')
 
-    @exception_handler
+    @utils.exception_handler
     def insert_time(self):
         """
         Add time data to the whole track.
@@ -185,7 +185,7 @@ class EditMenu(tk.Menu):
         btn_clear.pack(side=tk.RIGHT, padx=10)
         btn_submit.pack(side=tk.RIGHT, padx=10)
 
-    @exception_handler
+    @utils.exception_handler
     def fix_elevation(self):
         """
         Apply the elevation correction on the selected segment.
@@ -224,7 +224,7 @@ class EditMenu(tk.Menu):
             messagebox.showerror('Warning',
                                  'No segment is selected')
 
-    @exception_handler
+    @utils.exception_handler
     def remove_segment(self):
         selected_segment = \
             self.controller.shared_data.obj_track.selected_segment_idx
@@ -292,7 +292,7 @@ class EditMenu(tk.Menu):
 
         interaction.connect()
 
-    @exception_handler
+    @utils.exception_handler
     def change_order(self):
         """
         change order
@@ -325,8 +325,8 @@ class EditMenu(tk.Menu):
             # Create widgets
             var = tk.StringVar(top)
             var.set(i+1)
-            color = plots.rgb2hexcolor(
-                plots.color_rgb(plots.COLOR_LIST[(entry-1) % plots.N_COLOR]))
+            color = utils.rgb2hexcolor(
+                utils.color_rgb(plots.COLOR_LIST[(entry-1) % plots.N_COLOR]))
 
             spn_seg[entry] = tk.Spinbox(from_=1,
                                         to=99,
