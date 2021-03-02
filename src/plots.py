@@ -184,50 +184,53 @@ def get_closest_segment(df_track: pd.DataFrame, point: Tuple[float, float]):
     return min_distance, int(min_segment)
 
 
+def _deselect_segment(ob_track: track.Track):
+    if ob_track.selected_segment:
+        for selected_track in ob_track.selected_segment:
+            selected_track.remove()
+        ob_track.selected_segment = []
+        ob_track.selected_segment_idx = []
+
+
+def _select_segment(seg2select: int, ob_track: track.Track,
+                    ax_track: plt.Figure.gca):
+    segment = ob_track.get_segment(seg2select)
+    selected_segment, = ax_track.plot(segment.lon, segment.lat,
+                                      color=COLOR_LIST[(seg2select - 1)
+                                                       % N_COLOR],
+                                      linewidth=4,
+                                      zorder=10)
+    ob_track.selected_segment.append(selected_segment)
+    ob_track.selected_segment_idx.append(seg2select)
+
+
+def _select_track_info(track_info_table, seg2select: int = 0,
+                       deselect: bool = False):
+    table_size = sorted(track_info_table.get_celld().keys())[-1]
+    max_idx_row = table_size[0]
+    max_idx_col = table_size[1]
+
+    for i_row in range(max_idx_row + 1):
+        head_cell = track_info_table[i_row, 0]
+        segment_txt = head_cell.get_text()._text
+        if segment_txt.isnumeric():
+            if int(segment_txt) == seg2select and not deselect:
+                for i_col in range(max_idx_col + 1):
+                    cell = track_info_table[i_row, i_col]
+                    cell.set_text_props(
+                        fontproperties=FontProperties(weight='bold'))
+            else:
+                for i_col in range(max_idx_col + 1):
+                    cell = track_info_table[i_row, i_col]
+                    cell.set_text_props(
+                        fontproperties=FontProperties())
+
+
 def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
                       ax_elevation: plt.Figure.gca, fig_track: plt.Figure,
                       track_info_table):
 
-    def deselect_segment():
-        if ob_track.selected_segment:
-            for selected_track in ob_track.selected_segment:
-                selected_track.remove()
-            ob_track.selected_segment = []
-            ob_track.selected_segment_idx = []
-
-    def select_segment(seg2select):
-        segment = ob_track.get_segment(seg2select)
-        selected_segment, = ax_track.plot(segment.lon, segment.lat,
-                                          color=COLOR_LIST[(seg2select - 1)
-                                                           % N_COLOR],
-                                          linewidth=4,
-                                          zorder=10)
-        ob_track.selected_segment.append(selected_segment)
-        ob_track.selected_segment_idx.append(seg2select)
-
-    def select_track_info(seg2select: int = 0, deselect: bool = False):
-        table_size = sorted(track_info_table.get_celld().keys())[-1]
-        max_idx_row = table_size[0]
-        max_idx_col = table_size[1]
-
-        for i_row in range(max_idx_row + 1):
-            head_cell = track_info_table[i_row, 0]
-            segment_txt = head_cell.get_text()._text
-            if segment_txt.isnumeric():
-                if int(segment_txt) == seg2select and not deselect:
-                    for i_col in range(max_idx_col + 1):
-                        cell = track_info_table[i_row, i_col]
-                        cell.set_text_props(
-                            fontproperties=FontProperties(weight='bold'))
-                else:
-                    for i_col in range(max_idx_col + 1):
-                        cell = track_info_table[i_row, i_col]
-                        cell.set_text_props(
-                            fontproperties=FontProperties())
-
     def on_click(event):
-        # TODO: for some reason this is executed as many times as available
-        #  segments, ask in stackoverflow?
 
         # Check click limits before operation
         xlim = ax_track.get_xlim()
@@ -250,16 +253,16 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
 
         # Highlight track and elevation
         if point_distance < CLICK_DISTANCE and seg2select > 0:
-            deselect_segment()  # deselect current segment if needed
-            select_segment(seg2select)
+            _deselect_segment(ob_track)  # deselect current segment if needed
+            _select_segment(seg2select, ob_track, ax_track)
 
             plot_elevation(ob_track, ax_elevation,
                            selected_segment_idx=seg2select)
-            select_track_info(seg2select=seg2select)
+            _select_track_info(track_info_table, seg2select=seg2select)
         else:
-            deselect_segment()
+            _deselect_segment(ob_track)
             plot_elevation(ob_track, ax_elevation)
-            select_track_info(deselect=True)
+            _select_track_info(track_info_table, deselect=True)
 
         fig_track.canvas.draw()
 
