@@ -164,7 +164,8 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
         segment = ob_track.get_segment(seg_id)
         reduced_segment = mg.point_reduction(segment)
         ax.plot(reduced_segment.lon, reduced_segment.lat, color=cc,
-                linewidth=1, marker='o', markersize=2, zorder=10)
+                linestyle='None', marker='o', markersize=2, zorder=10)
+        ax.plot(segment.lon, segment.lat, color=cc, linewidth=1, zorder=10)
 
     # Join tracks
     for i in range(len(segments_id)-1):
@@ -238,6 +239,7 @@ def _select_track_info(track_info_table, seg2select: int = 0,
 def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
                       ax_elevation: plt.Figure.gca, fig_track: plt.Figure,
                       track_info_table):
+    reduced_df = mg.point_reduction(ob_track.df_track.copy())
 
     def on_click(event):
 
@@ -254,7 +256,7 @@ def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
         # Click position to distance
         if event.xdata and event.ydata:
             point_distance, seg2select = \
-                get_closest_segment(ob_track.df_track,
+                get_closest_segment(reduced_df,
                                     (event.ydata, event.xdata))
         else:  # click outside plot
             point_distance = 1e+10
