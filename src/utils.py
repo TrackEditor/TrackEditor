@@ -1,3 +1,9 @@
+"""UTILS
+General purpose functions
+
+Author: alguerre
+License: MIT
+"""
 import hashlib
 import tkinter as tk
 import tkinter.messagebox as messagebox

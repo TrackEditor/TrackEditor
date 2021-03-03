@@ -1,3 +1,9 @@
+"""GPX
+This module manages load and save operations on GPX files.
+
+Author: alguerre
+License: MIT
+"""
 import gpxpy
 import pandas as pd
 import os

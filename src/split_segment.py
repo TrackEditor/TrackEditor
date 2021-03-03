@@ -1,3 +1,11 @@
+"""SPLIT_SEGMENT
+The split segment functionality requires interactivity, the user must manually
+select the point in which the segment is divided. This interactivity is
+included in the elevation axis.
+
+Author: alguerre
+License: MIT
+"""
 from bisect import bisect
 import pandas as pd
 

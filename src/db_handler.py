@@ -1,3 +1,9 @@
+"""DB_HANDLER
+This module encapsulates all database operations.
+
+Author: alguerre
+License: MIT
+"""
 import sqlite3
 import logging
 import pandas as pd

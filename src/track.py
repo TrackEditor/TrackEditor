@@ -1,3 +1,12 @@
+"""TRACK
+The track class defines how the loaded GPX files are internally represented.
+Each of them is loaded in one Track object as a segment. It includes methods
+to manipulate these segments. From the user perspective, this manipulation is
+carried out througout the Edit Menu.
+
+Author: alguerre
+License: MIT
+"""
 import pandas as pd
 import numpy as np
 import datetime as dt

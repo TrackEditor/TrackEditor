@@ -1,3 +1,10 @@
+"""EDIT_MENU
+Definition of all the options of the Edit Menu in the GUI or Main Application.
+The cascade menu is defined and each of the functionalities is provided.
+
+Author: alguerre
+License: MIT
+"""
 import datetime as dt
 import tkinter as tk
 import tkinter.messagebox as messagebox

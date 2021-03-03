@@ -1,6 +1,6 @@
-"""
-i: interface
-osm: open street map
+""" IOSM
+refers to Interface with Open Street Map. The tiles to generate the base maps
+are downloaded and registered in the database with this module.
 """
 import os
 import math

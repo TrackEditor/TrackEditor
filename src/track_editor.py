@@ -1,3 +1,16 @@
+"""TRACK_EDITOR
+This is a graphical tool to edit GPX files in a graphical environment.
+Overview:
+    - File menu: functionalities to load and save your files
+    - Edit menu: options to edit the loaded tracks
+    - Panel: track and elevation plots, segments information box
+
+This module includes the main function of the tool and defines the global
+GUI aspect.
+
+Author: alguerre
+License: MIT
+"""
 import logging
 import datetime as dt
 import os

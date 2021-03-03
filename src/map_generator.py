@@ -1,3 +1,10 @@
+"""MAP_GENERATOR
+This module generates the map which is used in the track plot. This map is
+made of Open Street Map tiles, which are loaded with iosm module.
+
+Author: alguerre
+License: MIT
+"""
 import logging
 from typing import Tuple
 import pandas as pd

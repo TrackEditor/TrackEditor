@@ -1,3 +1,8 @@
+"""CONSTANTS
+
+Author: alguerre
+License: MIT
+"""
 import logging
 import os
 

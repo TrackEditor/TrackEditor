@@ -1,3 +1,12 @@
+"""PLOTS
+Module to generate track, elevation and information plots on the GUI. Each of
+them is represented in different axis of the same canvas. This module also
+implements interactivity for segment selection.
+
+Author: alguerre
+License: MIT
+"""
+
 import logging
 from typing import Tuple
 import numpy as np
