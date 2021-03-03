@@ -399,7 +399,7 @@ def test_columns_type():
         f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
 
     # Apply method
-    obj_track._columns_type()
+    obj_track._force_columns_type()
 
     # Checks
     types = obj_track.df_track.dtypes
