@@ -151,7 +151,7 @@ def plot_track(ob_track: track.Track, ax: plt.Figure.gca):
     # Plot track
     segments_id = ob_track.df_track.segment.unique()
     for seg_id in segments_id:
-        cc = COLOR_LIST[(seg_id - 1) % N_COLOR]  # color
+        cc = COLOR_LIST[(int(seg_id) - 1) % N_COLOR]  # color
         segment = ob_track.get_segment(seg_id)
         reduced_segment = mg.point_reduction(segment)
         ax.plot(reduced_segment.lon, reduced_segment.lat, color=cc,
@@ -344,3 +344,26 @@ def plot_no_elevation(ax: plt.Figure.gca):
         ax.set_ylim([0, 1])
         ax.tick_params(axis='x', bottom=False, top=False, labelbottom=False)
         ax.tick_params(axis='y', left=False, right=False, labelleft=False)
+
+
+def update_plots(ob_track: track.Track,
+                 ax_track: plt.Figure.gca,
+                 ax_elevation: plt.Figure.gca,
+                 ax_info: plt.Figure.gca,
+                 canvas=None):
+    plot_track(ob_track, ax_track)
+    plot_elevation(ob_track, ax_elevation)
+    info_table = plot_track_info(ob_track, ax_info)
+
+    if canvas:
+        canvas.draw()
+
+    return info_table
+
+
+def initial_plots(ax_world: plt.Figure.gca,
+                  ax_elevation: plt.Figure.gca,
+                  ax_info: plt.Figure.gca):
+    plot_world(ax_world)
+    plot_no_elevation(ax_elevation)
+    plot_no_info(ax_info)

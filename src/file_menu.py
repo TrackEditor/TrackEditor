@@ -1,5 +1,6 @@
 import os
 import tkinter as tk
+import tkinter.filedialog as filedialog
 import tkinter.messagebox as messagebox
 import pandas as pd
 import types
@@ -39,7 +40,7 @@ class FileMenu(tk.Menu):
     @exception_handler
     def load_track(self):
         # Load gpx file
-        gpx_file = tk.filedialog.askopenfile(
+        gpx_file = filedialog.askopenfile(
             initialdir=os.getcwd(),
             title='Select gpx file',
             filetypes=[('Gps data file', '*.gpx'), ('All files', '*')])
@@ -48,13 +49,13 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.obj_track.add_gpx(gpx_file.name)
 
             # Insert plot
-            plots.plot_track(self.controller.shared_data.obj_track,
-                             self.controller.shared_data.ax_track)
-            plots.plot_elevation(self.controller.shared_data.obj_track,
-                                 self.controller.shared_data.ax_ele)
-            track_info_table = plots.plot_track_info(
+            track_info_table = plots.update_plots(
                 self.controller.shared_data.obj_track,
-                self.controller.shared_data.ax_track_info)
+                self.controller.shared_data.ax_track,
+                self.controller.shared_data.ax_ele,
+                self.controller.shared_data.ax_track_info,
+                canvas=self.controller.shared_data.canvas)
+
             cid = plots.segment_selection(
                 self.controller.shared_data.obj_track,
                 self.controller.shared_data.ax_track,
@@ -75,7 +76,7 @@ class FileMenu(tk.Menu):
                                              message=message)
 
         if proceed:
-            session_file = tk.filedialog.askopenfile(
+            session_file = filedialog.askopenfile(
                 initialdir=os.getcwd(),
                 title='Select session file',
                 filetypes=[('Session file', '*.h5;*.hdf5;*he5'),
@@ -86,9 +87,8 @@ class FileMenu(tk.Menu):
                     session_meta = store.get_storer('session').attrs.metadata
 
                     # Load new track
-                    self.controller.shared_data.obj_track.df_track = session_track
-                    self.controller.shared_data.obj_track.loaded_files = \
-                        session_meta.loaded_files
+                    self.controller.shared_data.obj_track.df_track = \
+                        session_track
                     self.controller.shared_data.obj_track.size = \
                         session_meta.size
                     self.controller.shared_data.obj_track.total_distance = \
@@ -97,14 +97,12 @@ class FileMenu(tk.Menu):
                         session_meta.extremes
 
                     # Insert plot
-                    plots.plot_track(self.controller.shared_data.obj_track,
-                                     self.controller.shared_data.ax_track)
-                    plots.plot_elevation(self.controller.shared_data.obj_track,
-                                         self.controller.shared_data.ax_ele)
-                    plots.plot_track_info(
+                    plots.update_plots(
                         self.controller.shared_data.obj_track,
-                        self.controller.shared_data.ax_track_info)
-                    self.controller.shared_data.canvas.draw()
+                        self.controller.shared_data.ax_track,
+                        self.controller.shared_data.ax_ele,
+                        self.controller.shared_data.ax_track_info,
+                        canvas=self.controller.shared_data.canvas)
 
     @exception_handler
     def new_session(self):
@@ -124,9 +122,10 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.obj_track = track.Track()
 
             # Plot
-            plots.plot_world(self.controller.shared_data.ax_track)
-            plots.plot_no_elevation(self.controller.shared_data.ax_ele)
-            plots.plot_no_info(self.controller.shared_data.ax_track_info)
+            plots.initial_plots(
+                self.controller.shared_data.ax_track,
+                self.controller.shared_data.ax_ele,
+                self.controller.shared_data.ax_track_info)
 
             # Stop interactivity
             for cid in self.controller.shared_data.cid:
@@ -134,8 +133,7 @@ class FileMenu(tk.Menu):
                     cid)
             self.controller.shared_data.cid.clear()
 
-            # Update plots
-            self.controller.shared_data.canvas.draw()
+            self.controller.shared_data.canvas.draw()  # draw updated plots
 
     @exception_handler
     def save_session(self):
@@ -146,10 +144,8 @@ class FileMenu(tk.Menu):
         metadata.extremes = self.controller.shared_data.obj_track.extremes
         metadata.total_distance = \
             self.controller.shared_data.obj_track.total_distance
-        metadata.loaded_files = \
-            self.controller.shared_data.obj_track.loaded_files
 
-        session_filename = tk.filedialog.asksaveasfilename(
+        session_filename = filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
             title='Save session as',
             filetypes=[('Session file', '*.h5')])
@@ -160,6 +156,8 @@ class FileMenu(tk.Menu):
             store.get_storer('session').attrs.metadata = metadata
             store.close()
 
+        messagebox.showinfo('Info', 'Your session file is ready :)')
+
     @exception_handler
     def save_gpx(self):
         if self.controller.shared_data.obj_track.df_track.time.isnull().any():
@@ -168,7 +166,7 @@ class FileMenu(tk.Menu):
             messagebox.showerror('Error', msg)
             return
 
-        gpx_filename = tk.filedialog.asksaveasfilename(
+        gpx_filename = filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
             title='Save track as',
             filetypes=[('Gpx file', '*.gpx')])

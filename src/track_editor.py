@@ -53,24 +53,27 @@ class MainApplication(tk.Frame):
         # Prepare plot grid distribution
         gspec = gridspec.GridSpec(4, 8)
 
-        # Plot world map
+        # World map - define subplot space
         plt.subplot(gspec[:3, :5])
         self.shared_data.ax_track = plt.gca()
         self.shared_data.fig_track = plt.gcf()
-        plots.plot_world(self.shared_data.ax_track)
 
-        # Plot fake elevation
+        # Elevation - define subplot space
         with plt.style.context('ggplot'):
             plt.subplot(gspec[3, :5])
             self.shared_data.ax_ele = plt.gca()
             self.shared_data.fig_ele = plt.gcf()
-            plots.plot_no_elevation(self.shared_data.ax_ele)
 
-        # Text box
+        # Text box - define subplot space
         plt.subplot(gspec[:3, 5:])
         self.shared_data.ax_track_info = plt.gca()
         self.shared_data.fig_track_info = plt.gcf()
-        plots.plot_no_info(self.shared_data.ax_track_info)
+
+        # Insert plots
+        plots.initial_plots(
+            self.shared_data.ax_track,
+            self.shared_data.ax_ele,
+            self.shared_data.ax_track_info)
 
         # Button
         button_position = plt.axes([0.8, 0.025, 0.1, 0.04])

@@ -165,15 +165,11 @@ class SplitSegment:
             self.track.divide_segment(self.index)
             self.disconnect()
 
-            # Update plot
-            plots.plot_track(self.shared_data.obj_track,
-                             self.shared_data.ax_track)
-            plots.plot_track_info(
+            plots.update_plots(
                 self.shared_data.obj_track,
+                self.shared_data.ax_track,
+                self.shared_data.ax_ele,
                 self.shared_data.ax_track_info)
-
-            plots.plot_elevation(self.shared_data.obj_track,
-                                 self.shared_data.ax_ele)
 
         self.shared_data.btn_done.on_clicked(divide_segment)
 

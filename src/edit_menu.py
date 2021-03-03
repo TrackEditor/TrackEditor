@@ -56,18 +56,12 @@ class EditMenu(tk.Menu):
             segment_idx = selected_segment[0]
             self.controller.shared_data.obj_track.reverse_segment(segment_idx)
 
-            # Update plot
-            plots.plot_track_info(
+            plots.update_plots(
                 self.controller.shared_data.obj_track,
-                self.controller.shared_data.ax_track_info)
-
-            plots.plot_track(self.controller.shared_data.obj_track,
-                             self.controller.shared_data.ax_track)
-
-            plots.plot_elevation(self.controller.shared_data.obj_track,
-                                 self.controller.shared_data.ax_ele)
-
-            self.controller.shared_data.canvas.draw()
+                self.controller.shared_data.ax_track,
+                self.controller.shared_data.ax_ele,
+                self.controller.shared_data.ax_track_info,
+                canvas=self.controller.shared_data.canvas)
 
         elif len(selected_segment) > 1:
             messagebox.showerror('Warning',
@@ -208,15 +202,12 @@ class EditMenu(tk.Menu):
                 self.controller.shared_data.obj_track.smooth_elevation(
                     segment_idx)
 
-            # Update plot
-            plots.plot_track_info(
+            plots.update_plots(
                 self.controller.shared_data.obj_track,
-                self.controller.shared_data.ax_track_info)
-
-            plots.plot_elevation(self.controller.shared_data.obj_track,
-                                 self.controller.shared_data.ax_ele)
-
-            self.controller.shared_data.canvas.draw()
+                self.controller.shared_data.ax_track,
+                self.controller.shared_data.ax_ele,
+                self.controller.shared_data.ax_track_info,
+                canvas=self.controller.shared_data.canvas)
 
         elif len(selected_segment) > 1:
             messagebox.showerror('Warning',
@@ -241,24 +232,24 @@ class EditMenu(tk.Menu):
                 size = self.controller.shared_data.obj_track.remove_segment(
                     segment_idx)
 
-                # Update plot
                 if size > 0:
-                    plots.plot_track_info(
+                    plots.update_plots(
                         self.controller.shared_data.obj_track,
+                        self.controller.shared_data.ax_track,
+                        self.controller.shared_data.ax_ele,
+                        self.controller.shared_data.ax_track_info,
+                        canvas=self.controller.shared_data.canvas)
+
+                else:
+                    plots.initial_plots(
+                        self.controller.shared_data.ax_track,
+                        self.controller.shared_data.ax_ele,
                         self.controller.shared_data.ax_track_info)
 
-                    plots.plot_elevation(self.controller.shared_data.obj_track,
-                                         self.controller.shared_data.ax_ele)
-                    plots.plot_track(self.controller.shared_data.obj_track,
-                                     self.controller.shared_data.ax_track)
-                else:
-                    plots.plot_world(self.controller.shared_data.ax_track)
-                    plots.plot_no_elevation(self.controller.shared_data.ax_ele)
-                    plots.plot_no_info(
-                        self.controller.shared_data.ax_track_info)
                     tk.messagebox.showwarning(
                         title='No segment',
                         message='Last segment has been removed.')
+
                 self.controller.shared_data.canvas.draw()
 
         elif len(selected_segment) > 1:
@@ -377,14 +368,13 @@ class EditMenu(tk.Menu):
                 self.controller.shared_data.obj_track.change_order(new_order)
                 top.destroy()
 
-                # Update plots
-                plots.plot_elevation(self.controller.shared_data.obj_track,
-                                     self.controller.shared_data.ax_ele)
-                plots.plot_track(self.controller.shared_data.obj_track,
-                                 self.controller.shared_data.ax_track)
-                plots.plot_track_info(
+                plots.update_plots(
                     self.controller.shared_data.obj_track,
-                    self.controller.shared_data.ax_track_info)
+                    self.controller.shared_data.ax_track,
+                    self.controller.shared_data.ax_ele,
+                    self.controller.shared_data.ax_track_info,
+                    canvas=self.controller.shared_data.canvas)
+
                 self.controller.shared_data.canvas.draw()
 
         btn_clear = tk.Button(master=frm_button, text='Clear',
