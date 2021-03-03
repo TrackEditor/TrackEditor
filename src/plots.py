@@ -239,9 +239,9 @@ def _select_track_info(track_info_table, seg2select: int = 0,
 def segment_selection(ob_track: track.Track, ax_track: plt.Figure.gca,
                       ax_elevation: plt.Figure.gca, fig_track: plt.Figure,
                       track_info_table):
-    reduced_df = mg.point_reduction(ob_track.df_track.copy())
 
     def on_click(event):
+        reduced_df = mg.point_reduction(ob_track.df_track.copy())
 
         # Check click limits before operation
         xlim = ax_track.get_xlim()

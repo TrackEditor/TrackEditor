@@ -75,7 +75,7 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.cid.append(cid)
             self.controller.shared_data.canvas.draw()
 
-    #@exception_handler
+    @exception_handler
     def load_session(self):
         """
         Load a .h5 file. This file has to be previously created with this same
@@ -108,16 +108,31 @@ class FileMenu(tk.Menu):
                         session_meta.size
                     self.controller.shared_data.obj_track.total_distance = \
                         session_meta.total_distance
+                    self.controller.shared_data.obj_track.total_uphill = \
+                        session_meta.total_uphill
+                    self.controller.shared_data.obj_track.total_downhill = \
+                        session_meta.total_downhill
+                    self.controller.shared_data.obj_track.last_segment_idx = \
+                        session_meta.last_segment_idx
                     self.controller.shared_data.obj_track.extremes = \
                         session_meta.extremes
 
                     # Insert plot
-                    plots.update_plots(
+                    track_info_table = plots.update_plots(
                         self.controller.shared_data.obj_track,
                         self.controller.shared_data.ax_track,
                         self.controller.shared_data.ax_ele,
                         self.controller.shared_data.ax_track_info,
                         canvas=self.controller.shared_data.canvas)
+
+                    cid = plots.segment_selection(
+                        self.controller.shared_data.obj_track,
+                        self.controller.shared_data.ax_track,
+                        self.controller.shared_data.ax_ele,
+                        self.controller.shared_data.fig_track,
+                        track_info_table)
+                    self.controller.shared_data.cid.append(cid)
+                    self.controller.shared_data.canvas.draw()
 
     @exception_handler
     def new_session(self):
@@ -166,6 +181,12 @@ class FileMenu(tk.Menu):
         metadata.extremes = self.controller.shared_data.obj_track.extremes
         metadata.total_distance = \
             self.controller.shared_data.obj_track.total_distance
+        metadata.total_uphill = \
+            self.controller.shared_data.obj_track.total_uphill
+        metadata.total_downhill = \
+            self.controller.shared_data.obj_track.total_downhill
+        metadata.last_segment_idx = \
+            self.controller.shared_data.obj_track.last_segment_idx
 
         session_filename = filedialog.asksaveasfilename(
             initialdir=os.getcwd(),

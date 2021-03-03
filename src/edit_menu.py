@@ -161,7 +161,7 @@ class EditMenu(tk.Menu):
 
                 # Insert timestamp
                 self.controller.shared_data.obj_track.\
-                    _insert_timestamp(self.timestamp, self.speed)
+                    insert_timestamp(self.timestamp, self.speed)
                 top.destroy()
 
             except (ValueError, OverflowError) as e:
