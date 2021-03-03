@@ -7,9 +7,9 @@ carried out througout the Edit Menu.
 Author: alguerre
 License: MIT
 """
+import datetime as dt
 import pandas as pd
 import numpy as np
-import datetime as dt
 import geopy.distance
 import gpxpy.gpx
 
@@ -19,11 +19,22 @@ import constants as c
 
 
 class Track:
+    """
+    This class is designed to store gpx like data consisting of latitude-
+    longitude-elevation-time and manipulate them. All these operations are
+    done with pandas.
+    The data representation is:
+        - A pandas dataframe stores all data
+        - segments: each compoment of the track, each gpx file is a segment
+        - The dataframe have some extra columns not from gpx file, like
+        cumulated distance or elevation.
+        - Properties to store overall information
+    """
     def __init__(self):
         # Define dataframe and types
         self.columns = ['lat', 'lon', 'ele', 'segment', 'time']
         self.df_track = pd.DataFrame(columns=self.columns)
-        self._columns_type()
+        self._force_columns_type()
 
         # General purpose properties
         self.size = 0  # number of gpx in track
@@ -47,15 +58,6 @@ class Track:
         self.df_track = self.df_track.reset_index(drop=True)
         self._update_summary()  # for full track
 
-    def _update_summary(self):
-        self._insert_positive_elevation()
-        self._insert_negative_elevation()
-        self._insert_distance()
-        self._update_extremes()
-        self.total_distance = self.df_track.distance.iloc[-1]
-        self.total_uphill = self.df_track.ele_pos_cum.iloc[-1]
-        self.total_downhill = self.df_track.ele_neg_cum.iloc[-1]
-
     def get_segment(self, index: int):
         return self.df_track[self.df_track['segment'] == index]
 
@@ -70,7 +72,7 @@ class Track:
                                    segment.columns)
         rev_segment['time'] = time[::-1]
         self.df_track.loc[self.df_track['segment'] == index] = rev_segment
-        self._columns_type()  # ensure proper type for columns
+        self._force_columns_type()  # ensure proper type for columns
 
         self._update_summary()  # for full track
 
@@ -80,72 +82,6 @@ class Track:
                 lambda row: initial_time +
                             dt.timedelta(hours=row['distance']/speed),
                 axis=1)
-
-    def _columns_type(self):
-        """
-        At some points it is needed to ensure the data type of each column
-        """
-        self.df_track['lat'] = self.df_track['lat'].astype('float32')
-        self.df_track['lon'] = self.df_track['lon'].astype('float32')
-        self.df_track['ele'] = self.df_track['ele'].astype('float32')
-        self.df_track['segment'] = self.df_track['segment'].astype('int32')
-        self.df_track['time'] = self.df_track['time'].astype('datetime64[ns]')
-
-    def _insert_positive_elevation(self):
-        self.df_track['ele diff'] = self.df_track['ele'].diff()
-        negative_gain = self.df_track['ele diff'] < 0
-        self.df_track.loc[negative_gain, 'ele diff'] = 0
-
-        # Define new column
-        self.df_track['ele_pos_cum'] = \
-            self.df_track['ele diff'].cumsum().astype('float32')
-
-        # Drop temporary columns
-        self.df_track = self.df_track.drop(labels=['ele diff'], axis=1)
-
-    def _insert_negative_elevation(self):
-        self.df_track['ele diff'] = self.df_track['ele'].diff()
-        negative_gain = self.df_track['ele diff'] > 0
-        self.df_track.loc[negative_gain, 'ele diff'] = 0
-
-        # Define new column
-        self.df_track['ele_neg_cum'] = \
-            self.df_track['ele diff'].cumsum().astype('float32')
-
-        # Drop temporary columns
-        self.df_track = self.df_track.drop(labels=['ele diff'], axis=1)
-
-    def _insert_distance(self):
-        # Shift latitude and longitude (such way that first point is 0km)
-        self.df_track['lat_shift'] = pd.concat(
-            [pd.Series(np.nan), self.df_track.lat[0:-1]]).\
-            reset_index(drop=True)
-        self.df_track['lon_shift'] = pd.concat(
-            [pd.Series(np.nan), self.df_track.lon[0:-1]]).\
-            reset_index(drop=True)
-
-        def compute_distance(row):
-            from_coor = (row.lat, row.lon)
-            to_coor = (row.lat_shift, row.lon_shift)
-            try:
-                return abs(geopy.distance.geodesic(from_coor, to_coor).km)
-            except ValueError:
-                return 0
-
-        # Define new columns
-        self.df_track['p2p_distance'] = self.df_track.apply(compute_distance,
-                                                            axis=1)
-        self.df_track['distance'] = \
-            self.df_track.p2p_distance.cumsum().astype('float32')
-
-        # Drop temporary columns
-        self.df_track = self.df_track.drop(
-            labels=['lat_shift', 'lon_shift', 'p2p_distance'], axis=1)
-
-    def _update_extremes(self):
-        self.extremes = \
-            (self.df_track["lat"].min(), self.df_track["lat"].max(),
-             self.df_track["lon"].min(), self.df_track["lon"].max())
 
     def save_gpx(self, gpx_filename: str):
         # Create track
@@ -182,9 +118,8 @@ class Track:
             f.write(ob_gpxpy.to_xml())
 
     def smooth_elevation(self, index: int):
-        """
-        Apply moving average to fix elevation
-        """
+        # Apply moving average to fix elevation
+
         df_segment = self.get_segment(index)
         elevation = df_segment.ele.to_numpy()
 
@@ -311,3 +246,76 @@ class Track:
         self.df_track = self.df_track.drop(labels=['index1'], axis=1)
         self.df_track = self.df_track.reset_index(drop=True)
         self._update_summary()  # for full track
+
+    def _update_summary(self):
+        self._insert_positive_elevation()
+        self._insert_negative_elevation()
+        self._insert_distance()
+        self._update_extremes()
+        self.total_distance = self.df_track.distance.iloc[-1]
+        self.total_uphill = self.df_track.ele_pos_cum.iloc[-1]
+        self.total_downhill = self.df_track.ele_neg_cum.iloc[-1]
+
+    def _force_columns_type(self):
+        # At some points it is needed to ensure the data type of each column
+        self.df_track['lat'] = self.df_track['lat'].astype('float32')
+        self.df_track['lon'] = self.df_track['lon'].astype('float32')
+        self.df_track['ele'] = self.df_track['ele'].astype('float32')
+        self.df_track['segment'] = self.df_track['segment'].astype('int32')
+        self.df_track['time'] = self.df_track['time'].astype('datetime64[ns]')
+
+    def _insert_positive_elevation(self):
+        self.df_track['ele diff'] = self.df_track['ele'].diff()
+        negative_gain = self.df_track['ele diff'] < 0
+        self.df_track.loc[negative_gain, 'ele diff'] = 0
+
+        # Define new column
+        self.df_track['ele_pos_cum'] = \
+            self.df_track['ele diff'].cumsum().astype('float32')
+
+        # Drop temporary columns
+        self.df_track = self.df_track.drop(labels=['ele diff'], axis=1)
+
+    def _insert_negative_elevation(self):
+        self.df_track['ele diff'] = self.df_track['ele'].diff()
+        negative_gain = self.df_track['ele diff'] > 0
+        self.df_track.loc[negative_gain, 'ele diff'] = 0
+
+        # Define new column
+        self.df_track['ele_neg_cum'] = \
+            self.df_track['ele diff'].cumsum().astype('float32')
+
+        # Drop temporary columns
+        self.df_track = self.df_track.drop(labels=['ele diff'], axis=1)
+
+    def _insert_distance(self):
+        # Shift latitude and longitude (such way that first point is 0km)
+        self.df_track['lat_shift'] = pd.concat(
+            [pd.Series(np.nan), self.df_track.lat[0:-1]]). \
+            reset_index(drop=True)
+        self.df_track['lon_shift'] = pd.concat(
+            [pd.Series(np.nan), self.df_track.lon[0:-1]]). \
+            reset_index(drop=True)
+
+        def compute_distance(row):
+            from_coor = (row.lat, row.lon)
+            to_coor = (row.lat_shift, row.lon_shift)
+            try:
+                return abs(geopy.distance.geodesic(from_coor, to_coor).km)
+            except ValueError:
+                return 0
+
+        # Define new columns
+        self.df_track['p2p_distance'] = self.df_track.apply(compute_distance,
+                                                            axis=1)
+        self.df_track['distance'] = \
+            self.df_track.p2p_distance.cumsum().astype('float32')
+
+        # Drop temporary columns
+        self.df_track = self.df_track.drop(
+            labels=['lat_shift', 'lon_shift', 'p2p_distance'], axis=1)
+
+    def _update_extremes(self):
+        self.extremes = \
+            (self.df_track["lat"].min(), self.df_track["lat"].max(),
+             self.df_track["lon"].min(), self.df_track["lon"].max())

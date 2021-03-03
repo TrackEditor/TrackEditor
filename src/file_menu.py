@@ -46,6 +46,9 @@ class FileMenu(tk.Menu):
 
     @exception_handler
     def load_track(self):
+        """
+        Load a gpx file into the track object.
+        """
         # Load gpx file
         gpx_file = filedialog.askopenfile(
             initialdir=os.getcwd(),
@@ -72,8 +75,13 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.cid.append(cid)
             self.controller.shared_data.canvas.draw()
 
-    @exception_handler
+    #@exception_handler
     def load_session(self):
+        """
+        Load a .h5 file. This file has to be previously created with this same
+        application, since it stores all the data as defined in save_session
+        method.
+        """
         proceed = True
 
         if self.controller.shared_data.obj_track.size > 0:
@@ -113,6 +121,9 @@ class FileMenu(tk.Menu):
 
     @exception_handler
     def new_session(self):
+        """
+        Remove all data and plots to start from scratch.
+        """
         proceed = True
 
         if self.controller.shared_data.obj_track.size > 0:
@@ -144,6 +155,10 @@ class FileMenu(tk.Menu):
 
     @exception_handler
     def save_session(self):
+        """
+        Save data in used in a .h5 file. This file can be loaded later on with
+        the load_session method. All the information will be kept.
+        """
         session = self.controller.shared_data.obj_track.df_track
 
         metadata = types.SimpleNamespace()
@@ -167,6 +182,10 @@ class FileMenu(tk.Menu):
 
     @exception_handler
     def save_gpx(self):
+        """
+        Save all data in used in a gpx file. This needs include timestamp
+        information. No segments will be kept in the resulting file.
+        """
         if self.controller.shared_data.obj_track.df_track.time.isnull().any():
             msg = 'Timestamp is needed in order to generate your gpx.\n' + \
                   'Please, use Edit -> Insert Time'

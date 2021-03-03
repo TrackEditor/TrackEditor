@@ -22,8 +22,7 @@ MPL_BUTTON = None
 
 class EditMenu(tk.Menu):
     """
-    Implements all the edition options for tracks: cut, reverse, insert time,
-    split...
+    Implements all the edition options for the loaded GPX files
     """
     def __init__(self, parent, controller):
         # Define hinheritance
@@ -144,10 +143,8 @@ class EditMenu(tk.Menu):
         lbl_label.grid(row=i, column=0, pady=10)
         spn_speed.grid(row=i, column=1)
 
-        def insert_timestamp():
-            """
-            Check input data and insert timestamp
-            """
+        def _insert_timestamp():
+            # Check input data and insert timestamp
             try:
                 self.timestamp = dt.datetime(int(spn_time['year'].get()),
                                              int(spn_time['month'].get()),
@@ -161,13 +158,13 @@ class EditMenu(tk.Menu):
 
                 # Insert timestamp
                 self.controller.shared_data.obj_track.\
-                    insert_timestamp(self.timestamp, self.speed)
+                    _insert_timestamp(self.timestamp, self.speed)
                 top.destroy()
 
             except (ValueError, OverflowError) as e:
                 messagebox.showerror('Input Error', e)
 
-        def clear_box():
+        def _clear_box():
             for s in spn_time:
                 spn_time[s].delete(0, 8)
                 spn_time[s].insert(0, spinbox_options[s][2])
@@ -180,9 +177,9 @@ class EditMenu(tk.Menu):
                         pady=5)  # fill in horizontal direction
 
         btn_clear = tk.Button(master=frm_button, text='Clear',
-                              command=clear_box)
+                              command=_clear_box)
         btn_submit = tk.Button(master=frm_button, text='Submit',
-                               command=insert_timestamp)
+                               command=_insert_timestamp)
         btn_clear.pack(side=tk.RIGHT, padx=10)
         btn_submit.pack(side=tk.RIGHT, padx=10)
 
@@ -225,6 +222,9 @@ class EditMenu(tk.Menu):
 
     @utils.exception_handler
     def remove_segment(self):
+        """
+        Remove the selected segments from the track plot
+        """
         selected_segment = \
             self.controller.shared_data.obj_track.selected_segment_idx
 
@@ -267,6 +267,10 @@ class EditMenu(tk.Menu):
                                  'No segment is selected')
 
     def split_segment(self):
+        """
+        Split into two parts the selected segments from the track plot. The
+        splitting point selection is done in the elevation plot.
+        """
         # Selection management
         selected_segment = \
             self.controller.shared_data.obj_track.selected_segment_idx
@@ -294,7 +298,8 @@ class EditMenu(tk.Menu):
     @utils.exception_handler
     def change_order(self):
         """
-        change order
+        Alter the order of the segments. The selected value can also modify
+        its color.
         """
         if self.controller.shared_data.obj_track.size == 0:
             message = 'There is no loaded track to change order'
@@ -351,13 +356,13 @@ class EditMenu(tk.Menu):
         frm_button.pack(fill=tk.X, padx=5,
                         pady=5)  # fill in horizontal direction
 
-        def clear_box():
+        def _clear_box():
             for j, s in enumerate(spn_seg):
                 spn_seg[s].delete(0, 8)
                 spn_seg[s].insert(0, j + 1)
             spn_seg.insert(0, 0)
 
-        def insert_order():
+        def _insert_order():
 
             # Check valid order
             new_order = {}
@@ -385,8 +390,8 @@ class EditMenu(tk.Menu):
                 self.controller.shared_data.canvas.draw()
 
         btn_clear = tk.Button(master=frm_button, text='Clear',
-                              command=clear_box)
+                              command=_clear_box)
         btn_submit = tk.Button(master=frm_button, text='Submit',
-                               command=insert_order)
+                               command=_insert_order)
         btn_clear.pack(side=tk.RIGHT, padx=10)
         btn_submit.pack(side=tk.RIGHT, padx=10)

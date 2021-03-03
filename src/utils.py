@@ -8,9 +8,10 @@ import hashlib
 import tkinter as tk
 import tkinter.messagebox as messagebox
 import types
+from typing import Tuple
+
 import numpy as np
 import matplotlib.colors as mcolors
-from typing import Tuple
 
 
 def md5sum(file: str) -> str:

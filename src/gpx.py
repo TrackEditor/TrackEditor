@@ -4,10 +4,10 @@ This module manages load and save operations on GPX files.
 Author: alguerre
 License: MIT
 """
-import gpxpy
-import pandas as pd
 import os
+import pandas as pd
 import numpy as np
+import gpxpy
 
 import constants as c
 
@@ -17,6 +17,9 @@ class LoadGpxError(Exception):
 
 
 class Gpx:
+    """
+    Management of load and save operations for GPX files.
+    """
     def __init__(self, file):
         # Private attributes
         self.filename = os.path.basename(file)
