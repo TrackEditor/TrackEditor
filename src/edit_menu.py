@@ -365,7 +365,6 @@ class EditMenu(tk.Menu):
             for j, s in enumerate(spn_seg):
                 spn_seg[s].delete(0, 8)
                 spn_seg[s].insert(0, j + 1)
-            spn_seg.insert(0, 0)
 
         def _insert_order():
 

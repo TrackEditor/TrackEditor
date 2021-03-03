@@ -108,7 +108,7 @@ def plot_track_info(ob_track: track.Track, ax: plt.Figure.gca):
                           gained_elevation_lbl,
                           lost_elevation_lbl])
 
-        track_color.append(COLOR_LIST[(seg_id-1) % N_COLOR])
+        track_color.append(COLOR_LIST[(int(seg_id)-1) % N_COLOR])
 
     # Get info for the full track
     distance_lbl = get_distance_label(ob_track, -1, total=True)
@@ -290,7 +290,7 @@ def plot_elevation(ob_track: track.Track, ax: plt.Figure.gca,
 
     if selected_segment_idx == 0:
         for seg_id in segments_id:
-            cc = COLOR_LIST[(seg_id-1) % N_COLOR]  # color
+            cc = COLOR_LIST[(int(seg_id)-1) % N_COLOR]  # color
             segment = ob_track.get_segment(seg_id)
             ax.fill_between(segment.distance, segment.ele, alpha=0.2, color=cc)
             ax.plot(segment.distance, segment.ele, linewidth=2, color=cc)

@@ -57,6 +57,7 @@ class Track:
         self.df_track = pd.concat([self.df_track, df_gpx])
         self.df_track = self.df_track.reset_index(drop=True)
         self._update_summary()  # for full track
+        self._force_columns_type()
 
     def get_segment(self, index: int):
         return self.df_track[self.df_track['segment'] == index]
