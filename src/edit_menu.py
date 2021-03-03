@@ -50,6 +50,9 @@ class EditMenu(tk.Menu):
         self.timestamp = dt.datetime(2000, 1, 1, 0, 0, 0)
         self.speed = 0
 
+        # Split segment object control
+        self.split_segment_interaction = None
+
     @utils.exception_handler
     def reverse_segment(self):
         """
@@ -288,12 +291,14 @@ class EditMenu(tk.Menu):
             df_segment = \
                 self.controller.shared_data.obj_track.get_segment(segment_idx)
 
-        # Create plot
-        interaction = SplitSegmentCallback(
+        # Create interactivity
+        del self.split_segment_interaction
+        self.split_segment_interaction = SplitSegmentCallback(
             self.controller.shared_data,
             df_segment)
 
-        interaction.connect()
+        self.split_segment_interaction.connect()
+
 
     @utils.exception_handler
     def change_order(self):

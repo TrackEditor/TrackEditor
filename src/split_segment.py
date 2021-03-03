@@ -22,6 +22,7 @@ class SplitSegment:
         self.ax = [shared_data.ax_track, shared_data.ax_ele]
         self.track = shared_data.obj_track
         self.canvas = shared_data.canvas
+        self.running = True
 
         # Prepare initial plot for splitting option
         self.vline, self.filled_area, self.ele_line, self.point = \
@@ -170,24 +171,29 @@ class SplitSegment:
         self.press = None
 
         def divide_segment(_event):
-            self.track.divide_segment(self.index)
-            self.disconnect()
+            if self.running:
+                self.track.divide_segment(self.index)
 
-            plots.update_plots(
-                self.shared_data.obj_track,
-                self.shared_data.ax_track,
-                self.shared_data.ax_ele,
-                self.shared_data.ax_track_info)
+                plots.update_plots(
+                    self.shared_data.obj_track,
+                    self.shared_data.ax_track,
+                    self.shared_data.ax_ele,
+                    self.shared_data.ax_track_info)
+                self.disconnect()
 
-        self.shared_data.btn_done.on_clicked(divide_segment)
+        if self.running:
+            self.shared_data.btn_done.on_clicked(divide_segment)
 
         self.canvas.draw()
 
     def disconnect(self):
         """disconnect all the stored connection ids"""
+        self.running = False
+
         # Disable button
         self.shared_data.btn_done._text = '$Done$'
-        self.shared_data.btn_done.hovercolor = self.shared_data.btn_done.color
+        self.shared_data.btn_done.hovercolor = \
+            self.shared_data.btn_done.color
         self.shared_data.btn_done.label._color = '0.6'
 
         # Disconnect
