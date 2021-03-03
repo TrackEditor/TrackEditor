@@ -14,7 +14,7 @@ def test_load_file():
 
 def test_load_file_big():
     with pytest.raises(gpx.LoadGpxError):
-        route = gpx.Gpx(f'{TEST_PATH}/test_cases/over_10mb.gpx')
+        gpx.Gpx(f'{TEST_PATH}/test_cases/over_10mb.gpx')
 
 
 def test_load_file_no_permission():
@@ -23,7 +23,7 @@ def test_load_file_no_permission():
     os.chmod(file, 37449)
 
     with pytest.raises(gpx.LoadGpxError):
-        route = gpx.Gpx(file)
+        gpx.Gpx(file)
 
 
 def test_to_dict():
