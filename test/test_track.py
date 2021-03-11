@@ -19,12 +19,12 @@ def test_add_gpx():
         f'{prj_path}/test/test_cases/Innacessible_Island_Full.gpx')
 
     # Check that the file is properly loaded
-    assert obj_track.df_track.lat.iloc[0] == -37.309450000000005
-    assert obj_track.df_track.lon.iloc[0] == -12.696700000000002
-    assert obj_track.df_track.ele.iloc[0] == 537.61
-    assert obj_track.df_track.lat.iloc[-1] == -37.30682
-    assert obj_track.df_track.lon.iloc[-1] == -12.697750000000001
-    assert obj_track.df_track.ele.iloc[-1] == 550.0200000000001
+    assert obj_track.df_track.lat.iloc[0] == pytest.approx(-37.30945)
+    assert obj_track.df_track.lon.iloc[0] == pytest.approx(-12.69670)
+    assert obj_track.df_track.ele.iloc[0] == pytest.approx(537.61)
+    assert obj_track.df_track.lat.iloc[-1] == pytest.approx(-37.30682)
+    assert obj_track.df_track.lon.iloc[-1] == pytest.approx(-12.69775)
+    assert obj_track.df_track.ele.iloc[-1] == pytest.approx(550.0200)
     assert obj_track.df_track.shape[0] == 141
 
 
@@ -429,5 +429,7 @@ def test_save_gpx():
     saved_track.add_gpx(filename)
 
     # Check
-    assert (obj_track.df_track.fillna(0) ==
-            saved_track.df_track.fillna(0)).all().all()
+    assert (obj_track.df_track.lat == saved_track.df_track.lat).all()
+    assert (obj_track.df_track.lon == saved_track.df_track.lon).all()
+    assert (obj_track.df_track.ele == saved_track.df_track.ele).all()
+    assert (obj_track.df_track.time == saved_track.df_track.time).all()
