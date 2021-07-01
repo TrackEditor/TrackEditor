@@ -120,10 +120,10 @@ def create_map_img(extreme_tiles: Tuple[int, int, int, int],
 
     for x in range(xtile, final_xtile + 1, 1):
 
-        y_img = mpimg.imread(f'tiles/{zoom}/{x}/{ytile}.png')
+        y_img = mpimg.imread(f'{c.prj_path}/tiles/{zoom}/{x}/{ytile}.png')
 
         for y in range(ytile + 1, final_ytile + 1, 1):
-            local_img_path = f'tiles/{zoom}/{x}/{y}.png'
+            local_img_path = f'{c.prj_path}/tiles/{zoom}/{x}/{y}.png'
             local_img = mpimg.imread(local_img_path)
             y_img = np.vstack((y_img, local_img))
 

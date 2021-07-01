@@ -6,9 +6,12 @@ License: MIT
 """
 import hashlib
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as messagebox
 import types
 from typing import Tuple
+import threading
+import queue
 
 import numpy as np
 import matplotlib.colors as mcolors
@@ -121,3 +124,47 @@ def rgb2hexcolor(rgb_color: Tuple[float, float, float]) -> str:
     return '#%02x%02x%02x' % (int(255*rgb_color[0]),
                               int(255*rgb_color[1]),
                               int(255*rgb_color[2]))
+
+
+class Progress:
+    def __init__(self, parent):
+            self.toplevel = tk.Toplevel(parent)
+            self.progressbar = ttk.Progressbar(self.toplevel,
+                                               orient=tk.HORIZONTAL,
+                                               mode='indeterminate')
+            self.progressbar.pack()
+            self.t = threading.Thread()
+            self.t.__init__(target=self.progressbar.start, args=(5,))
+            self.t.start()
+
+    def end(self):
+        if not self.t.is_alive():
+            self.progressbar.stop()
+            self.toplevel.destroy()
+            self.t.join()
+
+
+def manage_queue(q, func, args):
+    func(*args)
+    q.put('finish')
+
+
+def execute_with_progressbar(master, func, *args):
+    q = queue.Queue()
+    q.put('init')
+
+    threading.Thread(target=manage_queue, args=(q, func, args)).start()
+    p = Progress(master)
+
+    def wait_thread():
+        if not q.empty():
+            element = q.get(0)
+            if element == 'finish':
+                p.end()
+                return True
+            else:
+                master.after(100, wait_thread)
+        else:
+            master.after(100, wait_thread)
+
+    wait_thread()

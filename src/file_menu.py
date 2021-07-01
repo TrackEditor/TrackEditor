@@ -14,7 +14,7 @@ import types
 
 import plots
 import track
-from utils import quit_app, exception_handler
+import utils
 
 
 class FileMenu(tk.Menu):
@@ -23,7 +23,7 @@ class FileMenu(tk.Menu):
     files or sessions.
     """
     def __init__(self, parent, controller):
-        # Define hinheritance
+        # Define inheritance
         tk.Menu.__init__(self, parent)
         self.controller = controller  # self from parent class
         self.parent = parent
@@ -41,10 +41,10 @@ class FileMenu(tk.Menu):
                                   command=self.save_gpx)
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit',
-                                  command=lambda: quit_app(self.parent))
+                                  command=lambda: utils.quit_app(self.parent))
         parent.add_cascade(label='File', menu=self.filemenu)
 
-    @exception_handler
+    @utils.exception_handler
     def load_track(self):
         """
         Load a gpx file into the track object.
@@ -55,6 +55,8 @@ class FileMenu(tk.Menu):
             title='Select gpx file',
             filetypes=[('Gps data file', '*.gpx'), ('All files', '*')])
 
+        # def load_track_controller(gpx_file_name):
+        #    self.controller.shared_data.obj_track.add_gpx(gpx_file_name)
         if gpx_file:  # user may close filedialog
             self.controller.shared_data.obj_track.add_gpx(gpx_file.name)
 
@@ -75,7 +77,14 @@ class FileMenu(tk.Menu):
             self.controller.shared_data.cid.append(cid)
             self.controller.shared_data.canvas.draw()
 
-    @exception_handler
+        # if gpx_file:  # user may close filedialog
+        #     # load_track_controller(gpx_file.name)
+        #     utils.execute_with_progressbar(self.parent,
+        #                                    load_track_controller,
+        #                                    gpx_file.name)
+
+
+    @utils.exception_handler
     def load_session(self):
         """
         Load a .h5 file. This file has to be previously created with this same
@@ -134,7 +143,7 @@ class FileMenu(tk.Menu):
                     self.controller.shared_data.cid.append(cid)
                     self.controller.shared_data.canvas.draw()
 
-    @exception_handler
+    @utils.exception_handler
     def new_session(self):
         """
         Remove all data and plots to start from scratch.
@@ -168,7 +177,7 @@ class FileMenu(tk.Menu):
 
             self.controller.shared_data.canvas.draw()  # draw updated plots
 
-    @exception_handler
+    @utils.exception_handler
     def save_session(self):
         """
         Save data in used in a .h5 file. This file can be loaded later on with
@@ -201,7 +210,7 @@ class FileMenu(tk.Menu):
 
         messagebox.showinfo('Info', 'Your session file is ready :)')
 
-    @exception_handler
+    @utils.exception_handler
     def save_gpx(self):
         """
         Save all data in used in a gpx file. This needs include timestamp
