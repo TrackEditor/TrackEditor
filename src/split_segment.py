@@ -116,8 +116,8 @@ class SplitSegment:
         # Move objects
         distance = self.df_segment.distance
         first_index = distance.index[0]
-        self.index = bisect(distance.reset_index(drop=True), x0 + dx) + \
-                     first_index
+        self.index = \
+            bisect(distance.reset_index(drop=True), x0 + dx) + first_index
 
         if self.index < 0:
             self.index = 0

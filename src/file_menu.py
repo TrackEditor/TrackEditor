@@ -83,7 +83,6 @@ class FileMenu(tk.Menu):
         #                                    load_track_controller,
         #                                    gpx_file.name)
 
-
     @utils.exception_handler
     def load_session(self):
         """

@@ -299,7 +299,6 @@ class EditMenu(tk.Menu):
 
         self.split_segment_interaction.connect()
 
-
     @utils.exception_handler
     def change_order(self):
         """

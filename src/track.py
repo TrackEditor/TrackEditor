@@ -80,8 +80,8 @@ class Track:
     def insert_timestamp(self, initial_time, speed):
         self.df_track['time'] = \
             self.df_track.apply(
-                lambda row: initial_time +
-                            dt.timedelta(hours=row['distance']/speed),
+                lambda row:
+                initial_time + dt.timedelta(hours=row['distance']/speed),
                 axis=1)
 
     def save_gpx(self, gpx_filename: str):

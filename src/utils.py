@@ -128,14 +128,14 @@ def rgb2hexcolor(rgb_color: Tuple[float, float, float]) -> str:
 
 class Progress:
     def __init__(self, parent):
-            self.toplevel = tk.Toplevel(parent)
-            self.progressbar = ttk.Progressbar(self.toplevel,
-                                               orient=tk.HORIZONTAL,
-                                               mode='indeterminate')
-            self.progressbar.pack()
-            self.t = threading.Thread()
-            self.t.__init__(target=self.progressbar.start, args=(5,))
-            self.t.start()
+        self.toplevel = tk.Toplevel(parent)
+        self.progressbar = ttk.Progressbar(self.toplevel,
+                                           orient=tk.HORIZONTAL,
+                                           mode='indeterminate')
+        self.progressbar.pack()
+        self.t = threading.Thread()
+        self.t.__init__(target=self.progressbar.start, args=(5,))
+        self.t.start()
 
     def end(self):
         if not self.t.is_alive():
