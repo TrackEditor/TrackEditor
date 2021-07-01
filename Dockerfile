@@ -27,12 +27,12 @@ RUN apt-get install -y \
         python3-tk
 
 RUN pip3 install \
-        numpy \
-        matplotlib \
-        pandas \
-        urllib3 \
-        geopy \
-        gpxpy
+        numpy==1.20.1 \
+        matplotlib==3.3.4 \
+        pandas==1.2.2 \
+        urllib3==1.25.9 \
+        geopy==2.1.0 \
+        gpxpy==1.4.2
 
 # Prepare file system
 WORKDIR /home/TrackEditor
