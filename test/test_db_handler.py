@@ -27,7 +27,7 @@ def area_tiles(zoom):
 
 def get_db() -> DbHandler:
     # Ease the creation of data base handler
-    dbh = DbHandler()
+    dbh = DbHandler(c.db_test_path)
     dbh.open_db()
     return dbh
 
@@ -45,7 +45,7 @@ def remove_test_files():
 
 
 def test_open_db():
-    dbh = DbHandler()
+    dbh = DbHandler(c.db_test_path)
     assert dbh.open_db()
 
 

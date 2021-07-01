@@ -12,12 +12,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DbHandler:
-    def __init__(self):
+    def __init__(self, db_path):
         self.conn = None
         self.cur = None
+        self.db_path = db_path
 
     def open_db(self):
-        self.conn = sqlite3.connect('db_track_editor.sqlite')
+        self.conn = sqlite3.connect(self.db_path)
         self.cur = self.conn.cursor()
         try:
             self.cur.execute("""CREATE TABLE Tiles (zoom INTEGER,

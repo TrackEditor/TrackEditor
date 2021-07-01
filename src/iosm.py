@@ -12,7 +12,7 @@ from db_handler import DbHandler
 
 LOGGER = logging.getLogger(__name__)
 
-DBH = DbHandler()
+DBH = DbHandler(c.db_path)
 
 
 def deg2num(lat_deg: float, lon_deg: float, zoom: int) -> (int, int):
