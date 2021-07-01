@@ -30,7 +30,7 @@ python3 track_editor.py
 ```
 
 A window in which you can load GPX files will be open, like this:
-![alt text](https://github.com/alguerre/TrackEditor/blob/master/docs/using_sample.png?raw=true)
+[![Watch the video](https://img.youtube.com/vi/eIU_mMSm0dg/maxresdefault.jpg)](https://youtu.be/eIU_mMSm0dg)
 
 
 ## Docker
