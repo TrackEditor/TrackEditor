@@ -49,6 +49,8 @@ docker-compose up -d
 The ${USER} variable would be set to _root_ which may be confusing when using the volumes.
 This can be debug by using _docker-compose config_
 
+[![Watch the video](https://img.youtube.com/vi/F8aCpumdNfI/maxresdefault.jpg)](https://youtu.be/F8aCpumdNfI)
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
