@@ -18,6 +18,7 @@ But no GPX editor matches my necessities at 100%.
 - **src**: source code
 - **docs**: design documents
 - **test**: test cases for src modules
+- **media**: videos and photos
 - Dockerfile
 - docker_compose.yml
 - requirements.txt: list of python packages dependencies 
