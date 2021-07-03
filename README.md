@@ -31,7 +31,7 @@ python3 track_editor.py
 
 A window in which you can load GPX files will be open, like this:
 [![Watch the video](https://img.youtube.com/vi/eIU_mMSm0dg/maxresdefault.jpg)](https://youtu.be/eIU_mMSm0dg)
-
+_(↑ it is a video, click it!)_
 
 ## Docker
 A Dockerfile is provided to execute the application in a controlled environment. 
@@ -50,7 +50,7 @@ The ${USER} variable would be set to _root_ which may be confusing when using th
 This can be debug by using _docker-compose config_
 
 [![Watch the video](https://img.youtube.com/vi/F8aCpumdNfI/maxresdefault.jpg)](https://youtu.be/F8aCpumdNfI)
-
+_(↑ it is a video, click it!)_
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
