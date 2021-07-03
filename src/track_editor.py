@@ -113,6 +113,7 @@ if __name__ == '__main__':
     # Initialize tk
     root = tk.Tk()
     root.wm_title('Track Editor')
+    root.iconbitmap(c.ico_path)
     # root.geometry('1200x800')
     MainApplication(root).pack(side='top', fill='both', expand=True)
 
