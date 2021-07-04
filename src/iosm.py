@@ -74,7 +74,7 @@ def _download_url(zoom: int, xtile: int, ytile: int) -> bool:
     # Request
     user_agent = {'user-agent': f'{c.tool} {c.version} {c.email}'}
     http = PoolManager(headers=user_agent)
-    url = f'https://c.tile.openstreetmap.org/{zoom}/{xtile}/{ytile}.png'
+    url = f'https://a.tile.openstreetmap.org/{zoom}/{xtile}/{ytile}.png'
     LOGGER.debug(f'Request to: {url}')
 
     response = http.request('GET', url)
