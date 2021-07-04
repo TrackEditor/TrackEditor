@@ -1,4 +1,4 @@
 MD5sum | Filename
 -- | --
-7587006bf6f8e6093fbe3fc80d8f62a5  | track_editor-linux
-239f2387279a92b164aa493ff2b641d2 |  track_editor-windows.7z
+85071c39f2bbe4c6a087105d1a3b4cbf  | track_editor-linux
+9b2f4c75ac163be9b1818852fb8b0fe7 |  track_editor-windows.7z
