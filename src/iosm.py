@@ -5,7 +5,7 @@ are downloaded and registered in the database with this module.
 import os
 import math
 import logging
-from urllib3 import PoolManager
+import requests
 
 import constants as c
 from db_handler import DbHandler
@@ -72,24 +72,22 @@ def _download_url(zoom: int, xtile: int, ytile: int) -> bool:
         DBH.remove_tile(zoom, xtile, ytile)
 
     # Request
-    user_agent = {'user-agent': f'{c.tool} {c.version} {c.email}'}
-    http = PoolManager(headers=user_agent)
-    url = f'https://a.tile.openstreetmap.org/{zoom}/{xtile}/{ytile}.png'
-    LOGGER.debug(f'Request to: {url}')
 
-    response = http.request('GET', url)
+    url = f'https://c.tile.openstreetmap.org/{zoom}/{xtile}/{ytile}.png'
+    LOGGER.debug(f'Request to: {url}')
+    response = requests.get(url)
 
     # Store content
     with open(tile_path, 'wb') as destination:
-        if response.status == 200:
-            destination.write(response.data)
+        if response.status_code == 200:
+            destination.write(response.content)
             LOGGER.info(f'Tile ({zoom},{xtile},{ytile})' +
                         f'has been downloaded at {url}')
         else:
             # empty file has been created
             LOGGER.error(f'Error in request url={url},' +
                          f'reason={response.reason},' +
-                         f'status={response.status}')
+                         f'status={response.status_code}')
         destination.close()
 
     # Check downloaded info
