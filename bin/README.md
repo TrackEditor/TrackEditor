@@ -1,4 +1,6 @@
 MD5sum | Filename
 -- | --
-14a6e169bdeb1354549999d26789ecb8  | track_editor-linux
-9b2f4c75ac163be9b1818852fb8b0fe7 |  track_editor-windows.7z
+f44c9465ce877800c449a095d863e0cb  | track_editor-linux
+06ac564887d2e528544f0bd3a3198a02 |  track_editor-windows.7z
+
+**Disclaimer:** only basic testing has been carried out on these executables. All tests have been run using python.
