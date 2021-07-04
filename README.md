@@ -15,24 +15,32 @@ There are amazing tools to create tracks from scratch: komoot, strava...
 But no GPX editor matches my necessities at 100%.
 
 ## Repository organization
-- **src**: source code
+- **bin**: executable files
 - **docs**: design documents
+- **src**: source code
 - **test**: test cases for src modules
-- **media**: videos and photos
 - Dockerfile
 - docker_compose.yml
 - requirements.txt: list of python packages dependencies 
 
-## Usage
-Launch is automatized by using docker. 
-In other case, just go to the src directory and launch:
+## Getting started
+**Option 1** Download your executable from _bin/_
+
+_Note:_ windows users will need to be uncompress using 7z and execute track_editor.exe file
+
+**Option 2** Clone full code and launch it with python
 ```
+python3 -m pip install -r requirements.txt
 python3 track_editor.py
 ```
+**Option 3** Use the docker image
 
+## Usage
 A window in which you can load GPX files will be open, like this:
+
+_↓ it is a video, click it!_
 [![Watch the video](https://img.youtube.com/vi/eIU_mMSm0dg/maxresdefault.jpg)](https://youtu.be/eIU_mMSm0dg)
-_(↑ it is a video, click it!)_
+
 
 ## Docker
 A Dockerfile is provided to execute the application in a controlled environment. 
@@ -50,8 +58,9 @@ docker-compose up -d
 The ${USER} variable would be set to _root_ which may be confusing when using the volumes.
 This can be debug by using _docker-compose config_
 
+_↓ it is a video, click it!_
 [![Watch the video](https://img.youtube.com/vi/F8aCpumdNfI/maxresdefault.jpg)](https://youtu.be/F8aCpumdNfI)
-_(↑ it is a video, click it!)_
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
