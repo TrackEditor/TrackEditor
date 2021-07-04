@@ -31,7 +31,6 @@ test_path = os.path.dirname(src_path) + '/test'
 db_path = 'db_track_editor.sqlite'
 db_test_path = test_path + '/db_test.sqlite'
 ico_path = src_path + '/media/compass.ico'
-xbm_path = src_path + '/media/compass.xbm'
 
 # OSM request options
 version = "v0.12"
