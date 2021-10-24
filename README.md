@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Build Status](https://github.com/alguerre/TrackEditor/actions/workflows/python-app.yml/badge.svg)
+![Build Status](https://github.com/TrackEditor/TrackEditor/actions/workflows/python-app.yml/badge.svg)
 
 # TrackEditor
 
@@ -13,6 +13,9 @@ visualize and edit your GPX files to create your custom track.
 
 There are amazing tools to create tracks from scratch: komoot, strava... 
 But no GPX editor matches my necessities at 100%.
+
+### Current status
+This project is being improved or maintained. A web version is being developed as an alternative: [TrackEditorWeb](https://github.com/TrackEditor/TrackEditorWeb)
 
 ## Repository organization
 - **bin**: executable files
